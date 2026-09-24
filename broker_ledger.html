@@ -634,6 +634,32 @@ header .btn-ghost:hover{background:rgba(255,255,255,.2);color:#fff}
 /* Tooltip-style label for action cards */
 .kpi-action-row .kpi-card::after { display:none }
 
+
+/* ── ACCOUNTING MODULE ── */
+.ac-wrap{overflow-x:auto}
+.ac-num{font-family:var(--mono);text-align:right;white-space:nowrap}
+.ac-muted{color:var(--t3);font-size:11px}
+.ac-ko{font-size:10px;color:var(--t3);margin-left:7px;font-weight:400}
+.ac-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ac-in{width:auto;font-family:var(--sans);font-size:11px;padding:5px 8px;border:1px solid var(--b2);border-radius:var(--r);background:var(--s1);color:var(--t1)}
+.ac-in:focus,.ac-tpl-b:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+tr.ac-sec td{background:var(--s2);font-weight:700;color:var(--hdr-bg);font-size:11px;letter-spacing:.02em}
+tr.ac-tot td{font-weight:700;color:var(--t1);border-top:1px solid var(--b3)}
+tr.ac-grand td{font-weight:700;color:var(--hdr-bg);border-top:3px double var(--b3);font-size:13px}
+tr.ac-jhead td{background:var(--s2);border-top:1px solid var(--b2);border-bottom:none}
+tr.ac-line td{border-bottom:none;padding-top:4px;padding-bottom:4px}
+.ac-alert{background:var(--gold-dim);border:1px solid rgba(176,125,16,.35);color:#7A5608;border-radius:var(--r);padding:9px 13px;font-size:12px;margin-bottom:16px;line-height:1.6}
+.ac-link{color:var(--blue);font-size:11px;text-decoration:none}
+.fgi .ac-chk,.ac-chk{text-transform:none;letter-spacing:0;font-weight:400;display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--t2);margin:4px 0;cursor:pointer}
+.ac-tpl{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.ac-tpl-b{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px;border:1px solid var(--b1);border-radius:var(--rl);background:var(--s1);cursor:pointer;font-family:var(--sans)}
+.ac-tpl-b:hover{border-color:var(--blue);background:var(--blue-dim)}
+.ac-tpl-b b{font-size:12px;color:var(--t1)}.ac-tpl-b span{font-size:11px;color:var(--t2)}.ac-tpl-b i{font-style:normal;font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:3px}
+.ac-preview{margin-top:14px;border:1px solid var(--b1);border-radius:var(--r);padding:8px 10px;background:var(--s2)}
+.ac-preview.ok{border-color:rgba(10,138,92,.45)}.ac-preview.bad{border-color:rgba(192,57,43,.45)}
+.ac-preview td{padding:4px 8px;font-size:11px}
+.ac-ltab td{padding:3px 4px;border:none}.ac-ltab select{width:100%}.ac-ltab input{width:110px;text-align:right}
+@media print{header,nav,.ac-noprint,.mo,#toast{display:none!important}main{padding:0!important;overflow:visible}.tw,.sc,.mc{box-shadow:none}}
 </style>
 </head>
 <body>
@@ -657,8 +683,8 @@ header .btn-ghost:hover{background:rgba(255,255,255,.2);color:#fff}
     <button class="btn btn-ghost btn-sm" onclick="exportAll()">↓ Export</button>
     <button class="btn btn-ghost btn-sm" id="demo-toggle-btn" onclick="toggleDemoMode()" title="영업 프레젠테이션용 가상 데이터 표시 (실제 데이터는 안전하게 백업 후 복귀 가능)">🎬 Demo</button>
     <button class="btn btn-ghost btn-sm" onclick="exportBackupJSON()" title="Download full JSON backup of ALL data">💾 Backup</button>
-    <button class="btn btn-sm btn-inc" id="hdr-inc-btn" onclick="openBkgTx('INCOME')" style="display:none">+ Income</button>
-    <button class="btn btn-sm btn-exp" id="hdr-exp-btn" onclick="openBkgTx('EXPENSE')" style="display:none">− Expense</button>
+    <button class="btn btn-sm btn-inc" id="hdr-inc-btn" onclick="openAcctTx('INCOME')" style="display:none">+ Income</button>
+    <button class="btn btn-sm btn-exp" id="hdr-exp-btn" onclick="openAcctTx('EXPENSE')" style="display:none">− Expense</button>
     <button class="btn btn-sm" id="hdr-csv-btn" onclick="goToImport()" style="display:none">↑ CSV Import</button>
     <button class="btn btn-p btn-sm" id="hdr-entry-btn" onclick="openModal('entry-modal')">+ New Entry</button>
     <button class="btn btn-p btn-sm" id="hdr-pipeline-btn" onclick="plRunWorkflow()" style="display:none;background:var(--purple);border-color:var(--purple)">⚡ Run Pipeline</button>
@@ -699,15 +725,22 @@ header .btn-ghost:hover{background:rgba(255,255,255,.2);color:#fff}
   </div>
   <!-- BOOKKEEPING MODULE -->
   <div id="nav-bookkeeping" style="display:none">
-    <div class="nav-module-label"><div class="nl-dot" style="background:var(--gold)"></div> BOOKKEEPING</div>
-    <div class="nav-item bkg-nav" onclick="showPage('bkg-dashboard',this)"><span class="nav-icon">◈</span> Overview</div>
-    <div class="nav-sect">Ledger</div>
-    <div class="nav-item bkg-nav" onclick="showPage('bkg-transactions',this)"><span class="nav-icon">≡</span> Transactions</div>
-    <div class="nav-sect">Analysis</div>
-    <div class="nav-item bkg-nav" onclick="showPage('bkg-categories',this)"><span class="nav-icon">◑</span> By Category</div>
-    <div class="nav-item bkg-nav" onclick="showPage('bkg-monthly',this)"><span class="nav-icon">▦</span> Monthly View</div>
+    <div class="nav-module-label"><div class="nl-dot" style="background:var(--gold)"></div> ACCOUNTING</div>
+    <div class="nav-item bkg-nav" onclick="showPage('acct-dashboard',this)"><span class="nav-icon">◈</span> Overview</div>
+    <div class="nav-sect">Books</div>
+    <div class="nav-item bkg-nav" onclick="showPage('acct-journal',this)"><span class="nav-icon">≡</span> Journal</div>
+    <div class="nav-item bkg-nav" onclick="showPage('acct-ledger',this)"><span class="nav-icon">▤</span> General Ledger</div>
+    <div class="nav-item bkg-nav" onclick="showPage('acct-reconcile',this)"><span class="nav-icon">✓</span> Bank Reconcile</div>
+    <div class="nav-item bkg-nav" onclick="showPage('acct-loans',this)"><span class="nav-icon">⇄</span> Loans</div>
+    <div class="nav-sect">Reports</div>
+    <div class="nav-item bkg-nav" onclick="showPage('acct-pl',this)"><span class="nav-icon">▦</span> Profit &amp; Loss</div>
+    <div class="nav-item bkg-nav" onclick="showPage('acct-bs',this)"><span class="nav-icon">⚖</span> Balance Sheet</div>
+    <div class="nav-item bkg-nav" onclick="showPage('acct-cf',this)"><span class="nav-icon">↕</span> Cash Flow</div>
+    <div class="nav-item bkg-nav" onclick="showPage('acct-tb',this)"><span class="nav-icon">Σ</span> Trial Balance</div>
+    <div class="nav-item bkg-nav" onclick="showPage('acct-tax',this)"><span class="nav-icon">%</span> Tax / Schedule C</div>
     <div class="nav-sect">Settings</div>
-    <div class="nav-item bkg-nav" onclick="showPage('bkg-setup',this)"><span class="nav-icon">⊙</span> Setup</div>
+    <div class="nav-item bkg-nav" onclick="showPage('acct-setup',this)"><span class="nav-icon">⊙</span> Accounts &amp; Setup</div>
+    <div class="nav-item bkg-nav" onclick="showPage('bkg-transactions',this)"><span class="nav-icon">⌛</span> Old Log (read-only)</div>
     <div class="nav-item bkg-nav" onclick="showPage('sheets-settings',this)"><span class="nav-icon">☁</span> Google Sheets</div>
   </div>
 </nav>
@@ -1026,11 +1059,8 @@ header .btn-ghost:hover{background:rgba(255,255,255,.2);color:#fff}
 <!-- BKG TRANSACTIONS -->
 <div id="page-bkg-transactions" class="page">
   <div class="ph">
-    <div><div class="ph-t">Transactions</div><div class="ph-s">Full general ledger</div></div>
-    <div class="ph-r">
-      <button class="btn btn-sm btn-exp" onclick="openBkgTx('EXPENSE')">− Expense</button>
-      <button class="btn btn-sm btn-inc" onclick="openBkgTx('INCOME')">+ Income</button>
-    </div>
+    <div><div class="ph-t">Old bookkeeping log</div><div class="ph-s">Read-only history from the single-entry log. New transactions go in Accounting → Journal; import from Accounts &amp; Setup.</div></div>
+    <div class="ph-r"><button class="btn btn-sm btn-p" onclick="acGo('journal')">Open journal</button></div>
   </div>
   <div class="tw">
     <div class="tt">
@@ -1088,6 +1118,19 @@ header .btn-ghost:hover{background:rgba(255,255,255,.2);color:#fff}
     </div>
   </div>
 </div>
+
+<!-- ACCOUNTING PAGES (double-entry) -->
+<div id="page-acct-dashboard" class="page"><div id="acx-dashboard"></div></div>
+<div id="page-acct-journal" class="page"><div id="acx-journal"></div></div>
+<div id="page-acct-ledger" class="page"><div id="acx-ledger"></div></div>
+<div id="page-acct-reconcile" class="page"><div id="acx-reconcile"></div></div>
+<div id="page-acct-loans" class="page"><div id="acx-loans"></div></div>
+<div id="page-acct-pl" class="page"><div id="acx-pl"></div></div>
+<div id="page-acct-bs" class="page"><div id="acx-bs"></div></div>
+<div id="page-acct-cf" class="page"><div id="acx-cf"></div></div>
+<div id="page-acct-tb" class="page"><div id="acx-tb"></div></div>
+<div id="page-acct-tax" class="page"><div id="acx-tax"></div></div>
+<div id="page-acct-setup" class="page"><div id="acx-setup"></div></div>
 
 <!-- ══════════════════════════════════════════
      PIPELINE PAGES
@@ -1692,6 +1735,8 @@ function testWrite() {
 </div>
 </div>
 
+<div class="mo" id="acct-modal"><div class="md" id="acct-modal-body" style="width:660px"></div></div>
+
 <div id="toast"></div>
 
 
@@ -2128,7 +2173,15 @@ async function gsSyncNow(){
         bkgExpCategories: db.bkgExpCategories,
         bkgGoals:         db.bkgGoals,
         plPushedCount:    db.plPushedCount || 0,
-        plLastRun:        db.plLastRun || null
+        plLastRun:        db.plLastRun || null,
+        acctJournal:      db.acctJournal || [],
+        nextAcctId:       db.nextAcctId || 1,
+        acctSettings:     db.acctSettings || null,
+        acctCoaX:         db.acctCoaX || null,
+        acctLoans:        db.acctLoans || [],
+        acctCleared:      db.acctCleared || {},
+        acctRecon:        db.acctRecon || [],
+        acctLegacyDone:   db.acctLegacyDone || []
       }
     });
 
@@ -2199,6 +2252,14 @@ async function gsLoadFromSheets(){
     if(d.bkgGoals)         db.bkgGoals         = d.bkgGoals;
     if(d.plPushedCount != null) db.plPushedCount = d.plPushedCount;
     if(d.plLastRun)        db.plLastRun        = d.plLastRun;
+    if(d.acctJournal && d.acctJournal.length) db.acctJournal = d.acctJournal;
+    if(d.nextAcctId)       db.nextAcctId       = Math.max(d.nextAcctId, db.nextAcctId||1);
+    if(d.acctSettings)     db.acctSettings     = d.acctSettings;
+    if(d.acctCoaX)         db.acctCoaX         = d.acctCoaX;
+    if(d.acctLoans && d.acctLoans.length)   db.acctLoans   = d.acctLoans;
+    if(d.acctCleared)      db.acctCleared      = d.acctCleared;
+    if(d.acctRecon && d.acctRecon.length)   db.acctRecon   = d.acctRecon;
+    if(d.acctLegacyDone && d.acctLegacyDone.length) db.acctLegacyDone = d.acctLegacyDone;
 
     // cache to localStorage too
     save();
@@ -2506,7 +2567,7 @@ function switchModule(mod,el){
   gid('hdr-pipeline-btn').style.display=mod==='pipeline'?'':'none';
   if(mod==='pipeline'){showPage('pipeline-dashboard',document.querySelector('#nav-pipeline .nav-item'));}
   else if(mod==='brokerage'){showPage('dashboard',document.querySelector('#nav-brokerage .nav-item'));}
-  else{showPage('bkg-dashboard',document.querySelector('#nav-bookkeeping .nav-item'));}
+  else{showPage('acct-dashboard',document.querySelector('#nav-bookkeeping .nav-item'));}
 }
 
 // ── NAVIGATION ──
@@ -2523,7 +2584,10 @@ function showPage(id,el){
     'pipeline-dashboard':renderPlDashboard,'pipeline-scan':renderPlScan,
     'pipeline-extract':renderPlExtract,'pipeline-queue':renderPlQueue,'pipeline-settings':()=>{},
     'sheets-settings':renderSheetsSettings,'import':()=>{},
-    'fda-watch':renderFdaWatch
+    'fda-watch':renderFdaWatch,
+    'acct-dashboard':()=>acRender('dashboard'),'acct-journal':()=>acRender('journal'),'acct-ledger':()=>acRender('ledger'),
+    'acct-reconcile':()=>acRender('reconcile'),'acct-loans':()=>acRender('loans'),'acct-pl':()=>acRender('pl'),'acct-bs':()=>acRender('bs'),
+    'acct-cf':()=>acRender('cf'),'acct-tb':()=>acRender('tb'),'acct-tax':()=>acRender('tax'),'acct-setup':()=>acRender('setup')
   };
   if(renders[id])renders[id]();
 }
@@ -5217,6 +5281,697 @@ document.addEventListener('DOMContentLoaded', async()=>{
 });
 
 
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// ACCOUNTING MODULE — double-entry general ledger (JN Customs Brokerage)
+// Manual journal + auto-derived entries from Entries / Invoice payments / A/P
+// ═══════════════════════════════════════════════════════════════
+const AC_BASE=[
+['1000','Business Checking (BofA)','사업 운영계좌','ASSET','','cash lock'],
+['1010','Petty Cash','소액현금','ASSET','','cash'],
+['1020','Tax Reserve Savings','세금 적립 계좌','ASSET','','cash'],
+['1200','Accounts Receivable – Clients','매출채권(고객 청구액)','ASSET','','lock'],
+['1250','Reimbursable Client Costs','고객 대납비용(청구 예정)','ASSET','','pt lock'],
+['1300','Prepaid Expenses','선급비용(본드·보험)','ASSET','',''],
+['1500','Computers & Equipment','비품·장비','ASSET','','fixed'],
+['1510','Accumulated Depreciation','감가상각누계액','ASSET','','fixed'],
+['1600','Security Deposits','보증금','ASSET','',''],
+['2000','Accounts Payable – Vendors','매입채무(벤더 미지급)','LIABILITY','','lock'],
+['2100','Business Credit Card','사업용 신용카드','LIABILITY','','card'],
+['2200','Client Deposits Held','고객 예치금(관세 선수금)','LIABILITY','','pt lock'],
+['2310','Loan Payable – Family','가족 차입금','LIABILITY','','loan lock'],
+['2320','Loan Payable – Other','기타 차입금','LIABILITY','','loan'],
+['2400','Duties/MPF/HMF Payable – CBP','CBP 납부 예정 관세·수수료','LIABILITY','','pt lock'],
+['3000',"Owner's Capital",'출자금','EQUITY','','lock'],
+['3100',"Owner's Draw",'인출금','EQUITY','','lock'],
+['3900','Retained Earnings','이월이익잉여금','EQUITY','',''],
+['4000','Customs Brokerage Fees','통관 수수료','INCOME','1','lock'],
+['4010','ISF Filing Fees','ISF 신고 수수료','INCOME','1',''],
+['4020','Disbursement & Handling Fees','대납·핸들링 수수료','INCOME','1',''],
+['4030','Consulting & Classification','컨설팅·품목분류','INCOME','1',''],
+['4040','Other Service Income','기타 용역수입','INCOME','1',''],
+['4900','Other Income','기타 수입(이자 등)','INCOME','6',''],
+['5000','Advertising & Marketing','광고·마케팅','EXPENSE','8',''],
+['5100','Car & Truck','차량비(업무 주행)','EXPENSE','9',''],
+['5150','Commissions & Referral Fees','커미션·소개비','EXPENSE','10',''],
+['5200','Contract Labor','외주 용역','EXPENSE','11',''],
+['5220','Wages (employees)','직원 급여','EXPENSE','26',''],
+['5250','Depreciation & Sec. 179','감가상각·179조','EXPENSE','13',''],
+['5300','Insurance – Customs Bond','통관 본드 보험료','EXPENSE','15',''],
+['5310','Insurance – E&O / Liability','E&O·배상책임보험','EXPENSE','15',''],
+['5400','Interest – Loans','차입금 이자','EXPENSE','16b','lock'],
+['5450','Interest – Credit Card','카드 이자','EXPENSE','16b',''],
+['5500','Legal & Professional','CPA·변호사 비용','EXPENSE','17',''],
+['5600','Office Expense & Postage','사무용품·우편','EXPENSE','18',''],
+['5700','Rent – Office','사무실 임차료','EXPENSE','20b',''],
+['5710','Rent – Equipment','장비 임차료','EXPENSE','20a',''],
+['5750','Repairs & Maintenance','수선·유지','EXPENSE','21',''],
+['5800','Supplies','소모품','EXPENSE','22',''],
+['5900','Taxes & Licenses','세금·면허(CBP 퍼밋 등)','EXPENSE','23',''],
+['6000','Travel','출장비','EXPENSE','24a',''],
+['6050','Meals (50% deductible)','식대(50% 공제)','EXPENSE','24b',''],
+['6100','Utilities – Phone & Internet','통신비','EXPENSE','25',''],
+['6200','ABI Software (NetCHB)','ABI 소프트웨어','EXPENSE','27a',''],
+['6210','Software & Subscriptions','소프트웨어·구독','EXPENSE','27a',''],
+['6250','Bank & Wire Fees','은행·송금 수수료','EXPENSE','27a',''],
+['6300','Education & Continuing Ed.','교육·보수교육','EXPENSE','27a',''],
+['6310','Dues & Memberships','협회비','EXPENSE','27a',''],
+['6400','Unbilled Client Costs','미청구 고객 대납비용','EXPENSE','27a',''],
+['6900','Other Expenses','기타 비용','EXPENSE','27a','']
+];
+const AC_TYPE_LABEL={ASSET:'Assets',LIABILITY:'Liabilities',EQUITY:'Equity',INCOME:'Income',EXPENSE:'Expenses'};
+const AC_DR_NORMAL={ASSET:true,EXPENSE:true,LIABILITY:false,EQUITY:false,INCOME:false};
+const AC_SC={'1':'Gross receipts or sales','6':'Other income','8':'Advertising','9':'Car and truck expenses','10':'Commissions and fees','11':'Contract labor','13':'Depreciation and section 179','15':'Insurance (other than health)','16b':'Interest — other','17':'Legal and professional services','18':'Office expense','20a':'Rent — vehicles, machinery, equipment','20b':'Rent — other business property','21':'Repairs and maintenance','22':'Supplies','23':'Taxes and licenses','24a':'Travel','24b':'Deductible meals (50%)','25':'Utilities','26':'Wages','27a':'Other expenses'};
+const AC_SC_ORDER=['8','9','10','11','13','15','16b','17','18','20a','20b','21','22','23','24a','24b','25','26','27a'];
+const AC_AP_MAP={'TRUCKING':'6400','COURIER':'5600','CBP EXAM':'6400','DUTY/TAX ADVANCE':'6400','ISF FILING':'6210','WAREHOUSE/CFS':'6400','PALLET/HANDLING':'6400','ABI SOFTWARE':'6200','BOND PREMIUM':'5300','OTHER':'6900'};
+const AC_SS_WAGE_BASE=184500; // 2026 Social Security wage base
+const AC_DEFAULTS={booksStart:'2026-01-01',depositAcct:'1000',payAcct:'1000',autoEntries:true,autoPayments:true,autoAp:true,dutiesFlow:true,taxPct:25,lockThrough:''};
+
+const AC_TPL={
+  INCOME:    {t:'Income received',      ko:'수입 입금',            dr:['Deposit to','cash'],        cr:['Income account','INCOME'],  dd:'1000',cd:'4000'},
+  EXPENSE:   {t:'Expense paid',         ko:'비용 지출',            dr:['Expense account','EXPENSE'],cr:['Paid from','paysrc'],       dd:'6900',cd:'1000'},
+  TRANSFER:  {t:'Transfer / pay card',  ko:'계좌이체·카드대금',    dr:['To account','paysrc'],      cr:['From account','paysrc'],   dd:'1020',cd:'1000'},
+  LOAN_IN:   {t:'Loan received',        ko:'차입금 입금',          dr:['Deposit to','cash'],        cr:['Loan account','loan'],     dd:'1000',cd:'2310'},
+  LOAN_PAY:  {t:'Loan repayment',       ko:'차입금 상환',          special:true},
+  OWNER_IN:  {t:'Owner contribution',   ko:'자본 출자',            dr:['Deposit to','cash'],        cr:['Equity account','EQUITY'], dd:'1000',cd:'3000'},
+  OWNER_DRAW:{t:'Owner draw',           ko:'개인 인출',            dr:['Equity account','EQUITY'],  cr:['Paid from','cash'],        dd:'3100',cd:'1000'},
+  CLIENT_DEP:{t:'Client duty deposit',  ko:'고객 관세 예치금 입금', dr:['Deposit to','cash'],        cr:['Held as','pt'],            dd:'1000',cd:'2200'},
+  APPLY_DEP: {t:'Apply deposit to A/R', ko:'예치금 → 매출채권 상계', dr:['From deposit','pt'],        cr:['Receivable','ASSET'],      dd:'2200',cd:'1200'},
+  CBP_PAY:   {t:'Pay CBP duties/fees',  ko:'CBP 관세·MPF·HMF 납부', dr:['Liability','pt'],           cr:['Paid from','cash'],        dd:'2400',cd:'1000'},
+  REIMB_IN:  {t:'Client reimbursement', ko:'대납비용 회수',        dr:['Deposit to','cash'],        cr:['Clears','pt'],             dd:'1000',cd:'1250'},
+  ASSET_BUY: {t:'Equipment purchase',   ko:'장비 구입',            dr:['Asset account','fixed'],    cr:['Paid from','paysrc'],       dd:'1500',cd:'1000'},
+  GENERAL:   {t:'General journal',      ko:'일반 분개(수동)',       special:true}
+};
+const AC_TPL_GROUPS=[['Everyday',['INCOME','EXPENSE','TRANSFER']],['Financing & owner',['LOAN_IN','LOAN_PAY','OWNER_IN','OWNER_DRAW']],['Client funds (pass-through)',['CLIENT_DEP','APPLY_DEP','CBP_PAY','REIMB_IN']],['Other',['ASSET_BUY','GENERAL']]];
+
+const acR2=n=>Math.round((parseFloat(n)||0)*100)/100;
+const acE=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function acF(n,blankZero){n=acR2(n);if(blankZero&&Math.abs(n)<0.005)return '—';const s='$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});return n<0?'('+s+')':s;}
+const acV=id=>{const el=gid(id);return el?el.value:'';};
+
+function ensureAcct(){
+  if(!Array.isArray(db.acctJournal))db.acctJournal=[];
+  if(!db.nextAcctId)db.nextAcctId=1;
+  db.acctSettings=Object.assign({},AC_DEFAULTS,db.acctSettings||{});
+  if(!db.acctCoaX)db.acctCoaX={add:[],off:[],ren:{}};
+  ['add','off'].forEach(k=>{if(!Array.isArray(db.acctCoaX[k]))db.acctCoaX[k]=[];});
+  if(!db.acctCoaX.ren)db.acctCoaX.ren={};
+  if(!Array.isArray(db.acctLoans))db.acctLoans=[];
+  if(!db.acctCleared)db.acctCleared={};
+  if(!Array.isArray(db.acctRecon))db.acctRecon=[];
+  if(!Array.isArray(db.acctLegacyDone))db.acctLegacyDone=[];
+}
+
+// ── Chart of accounts ──
+function acCoa(){
+  const x=db.acctCoaX||{add:[],off:[],ren:{}};
+  const list=AC_BASE.map(r=>({code:r[0],name:r[1],ko:r[2],type:r[3],sc:r[4],flags:r[5].split(' ').filter(Boolean),base:true}))
+    .concat((x.add||[]).map(a=>Object.assign({flags:[]},a,{base:false})));
+  list.forEach(a=>{const rn=(x.ren||{})[a.code];if(rn){if(rn.name)a.name=rn.name;if(rn.ko!=null)a.ko=rn.ko;}a.off=(x.off||[]).includes(a.code);});
+  return list.sort((a,b)=>a.code.localeCompare(b.code));
+}
+function acMap(){const m={};acCoa().forEach(a=>m[a.code]=a);return m;}
+function acFilter(f,M){
+  return Object.values(M).filter(a=>{
+    if(a.type===f)return true;
+    if(f==='paysrc')return a.flags.includes('cash')||a.flags.includes('card')||a.code==='2000';
+    if(f==='any')return true;
+    return a.flags.includes(f);
+  });
+}
+function acName(code,M){const a=(M||acMap())[code];return a?a.code+' '+a.name:code+' (unknown)';}
+function acOpts(f,sel,M,includeOff){
+  const list=acFilter(f,M).filter(a=>!a.off||a.code===sel||includeOff);
+  let h='',last='';
+  list.forEach(a=>{if(a.type!==last){if(last)h+='</optgroup>';h+=`<optgroup label="${AC_TYPE_LABEL[a.type]}">`;last=a.type;}
+    h+=`<option value="${a.code}"${a.code===sel?' selected':''}>${a.code} ${acE(a.name)}</option>`;});
+  return h+(last?'</optgroup>':'');
+}
+
+// ── Journal: manual + derived ──
+function acDerived(){
+  const s=db.acctSettings,st=s.booksStart||'0000-00-00',out=[];
+  if(s.autoEntries)(db.entries||[]).forEach(e=>{
+    if(!e.date||e.date<st)return;
+    const fee=acR2(e.brokerFee),gov=s.dutiesFlow?acR2((+e.duty||0)+(+e.mpf||0)+(+e.hmf||0)):0,tot=acR2(fee+gov);
+    if(tot<=0)return;
+    const lines=[{a:'1200',d:tot,c:0}];if(fee)lines.push({a:'4000',d:0,c:fee});if(gov)lines.push({a:'2400',d:0,c:gov});
+    out.push({id:'E'+e.id,date:e.date,ref:e.number,party:e.clientName||'',memo:'Entry billed — broker fee'+(gov?' + duties/MPF/HMF':''),lines,src:'entry',kind:'AUTO'});
+  });
+  if(s.autoPayments)(db.invoices||[]).forEach(inv=>(inv.payments||[]).forEach((p,i)=>{
+    const amt=acR2(p.amount);if(!p.date||p.date<st||!amt)return;
+    out.push({id:'P'+inv.id+'-'+i,date:p.date,ref:inv.number,party:inv.clientName||'',memo:'Client payment'+(p.method?' ('+p.method+')':''),lines:[{a:s.depositAcct||'1000',d:amt,c:0},{a:'1200',d:0,c:amt}],src:'payment',kind:'AUTO'});
+  }));
+  if(s.autoAp)(db.apInvoices||[]).forEach(a=>{
+    const amt=acR2(a.amount);if(!a.date||a.date<st||!amt)return;
+    const acc=a.billable?'1250':(AC_AP_MAP[(a.category||'').toUpperCase()]||'6900');
+    out.push({id:'A'+a.id,date:a.date,ref:a.invoiceNo||('AP-'+a.id),party:a.vendor||'',memo:(a.billable?'Billable cost':'Vendor bill')+' — '+(a.category||'')+(a.entryNumber?' / '+a.entryNumber:''),lines:[{a:acc,d:amt,c:0},{a:'2000',d:0,c:amt}],src:'ap',kind:'AUTO'});
+    if(a.status==='Paid'&&a.paidDate&&a.paidDate>=st)out.push({id:'AP'+a.id,date:a.paidDate,ref:a.invoiceNo||('AP-'+a.id),party:a.vendor||'',memo:'Vendor bill paid',lines:[{a:'2000',d:amt,c:0},{a:s.payAcct||'1000',d:0,c:amt}],src:'ap',kind:'AUTO'});
+  });
+  return out;
+}
+function acAll(from,to){
+  const list=db.acctJournal.concat(acDerived());
+  return list.filter(j=>(!from||j.date>=from)&&(!to||j.date<=to))
+    .sort((a,b)=>a.date===b.date?String(a.id).localeCompare(String(b.id),undefined,{numeric:true}):a.date.localeCompare(b.date));
+}
+function acBal(list){const b={};list.forEach(j=>j.lines.forEach(l=>{const x=b[l.a]||(b[l.a]={d:0,c:0});x.d+=+l.d||0;x.c+=+l.c||0;}));return b;}
+function acNet(code,b,M){const a=M[code];const x=b[code]||{d:0,c:0};if(!a)return acR2(x.d-x.c);return acR2(AC_DR_NORMAL[a.type]?x.d-x.c:x.c-x.d);}
+function acSumBy(pred,b,M){return acR2(Object.values(M).filter(pred).reduce((s,a)=>s+acNet(a.code,b,M),0));}
+
+function acPL(from,to,M){
+  const b=acBal(acAll(from,to));
+  const inc=Object.values(M).filter(a=>a.type==='INCOME').map(a=>({a,v:acNet(a.code,b,M)})).filter(x=>Math.abs(x.v)>=0.005);
+  const exp=Object.values(M).filter(a=>a.type==='EXPENSE').map(a=>({a,v:acNet(a.code,b,M)})).filter(x=>Math.abs(x.v)>=0.005);
+  const ti=acR2(inc.reduce((s,x)=>s+x.v,0)),te=acR2(exp.reduce((s,x)=>s+x.v,0));
+  return {inc,exp,ti,te,ni:acR2(ti-te)};
+}
+
+// ── Periods ──
+let acS={p:'ytd',from:'',to:'',asOf:'',acct:'1000',q:'',src:'ALL',year:'',recAcct:'1000',recDate:'',recBal:''};
+function acPeriod(){
+  const t=today(),y=+t.slice(0,4),m=+t.slice(5,7),pad=n=>String(n).padStart(2,'0');
+  const eom=(yy,mm)=>new Date(yy,mm,0).getDate();
+  switch(acS.p){
+    case 'mtd':return{from:`${y}-${pad(m)}-01`,to:t,label:'This month'};
+    case 'lastm':{const d=new Date(y,m-2,1);const yy=d.getFullYear(),mm=d.getMonth()+1;return{from:`${yy}-${pad(mm)}-01`,to:`${yy}-${pad(mm)}-${eom(yy,mm)}`,label:'Last month'};}
+    case 'qtd':{const qm=Math.floor((m-1)/3)*3+1;return{from:`${y}-${pad(qm)}-01`,to:t,label:'This quarter'};}
+    case 'lasty':return{from:`${y-1}-01-01`,to:`${y-1}-12-31`,label:String(y-1)};
+    case 'all':return{from:'',to:'',label:'All time'};
+    case 'custom':return{from:acS.from||'',to:acS.to||'',label:(acS.from||'…')+' → '+(acS.to||'…')};
+    default:return{from:`${y}-01-01`,to:t,label:'Year to date '+y};
+  }
+}
+function acPeriodBar(){
+  const o=[['mtd','This month'],['lastm','Last month'],['qtd','This quarter'],['ytd','Year to date'],['lasty','Last year'],['all','All time'],['custom','Custom…']];
+  return `<select class="ac-in" onchange="acS.p=this.value;acRefresh()">${o.map(x=>`<option value="${x[0]}"${acS.p===x[0]?' selected':''}>${x[1]}</option>`).join('')}</select>`+
+    (acS.p==='custom'?`<input type="date" class="ac-in" value="${acS.from}" onchange="acS.from=this.value;acRefresh()"/><span class="ac-muted">to</span><input type="date" class="ac-in" value="${acS.to}" onchange="acS.to=this.value;acRefresh()"/>`:'');
+}
+function acAsOfBar(){if(!acS.asOf)acS.asOf=today();return `<span class="ac-muted">As of</span><input type="date" class="ac-in" value="${acS.asOf}" onchange="acS.asOf=this.value||today();acRefresh()"/>`;}
+
+// ── Page header ──
+function acHead(title,sub,right){return `<div class="ph"><div><div class="ph-t">${title}</div><div class="ph-s">${sub||''}</div></div><div class="ph-r ac-noprint">${right||''}</div></div>`;}
+const AC_NEW_BTNS=`<button class="btn btn-sm btn-exp" onclick="openAcctTx('EXPENSE')">− Expense</button><button class="btn btn-sm btn-inc" onclick="openAcctTx('INCOME')">+ Income</button><button class="btn btn-sm btn-p" onclick="openAcctTx()">+ New entry</button>`;
+
+// ── Router ──
+const AC_PAGES=['dashboard','journal','ledger','reconcile','loans','pl','bs','cf','tb','tax','setup'];
+function acRender(pg){
+  ensureAcct();const el=gid('acx-'+pg);if(!el)return;
+  const M=acMap();
+  const fn={dashboard:acDash,journal:acJournal,ledger:acLedger,reconcile:acReconcile,loans:acLoans,pl:acPLPage,bs:acBS,cf:acCF,tb:acTB,tax:acTax,setup:acSetup}[pg];
+  try{el.innerHTML=fn(M);}catch(err){console.error(err);el.innerHTML='<div class="empty"><div class="empty-t">⚠ Render error: '+acE(err.message)+'</div></div>';}
+  if(pg==='dashboard')acDrawChart(M);
+}
+function acRefresh(){const p=document.querySelector('.page.active[id^="page-acct-"]');if(p)acRender(p.id.replace('page-acct-',''));}
+
+// ── Overview ──
+function acDash(M){
+  const s=db.acctSettings,t=today(),y=t.slice(0,4);
+  const all=acAll('',t),b=acBal(all);
+  const cash=acSumBy(a=>a.flags.includes('cash'),b,M);
+  const loans=acSumBy(a=>a.flags.includes('loan'),b,M);
+  const card=acSumBy(a=>a.flags.includes('card'),b,M);
+  const ar=acNet('1200',b,M),adv=acNet('1250',b,M),dep=acNet('2200',b,M),cbp=acNet('2400',b,M),ap=acNet('2000',b,M);
+  const ytd=acPL(y+'-01-01',t,M),mtd=acPL(t.slice(0,7)+'-01',t,M);
+  const tD=all.reduce((x,j)=>x+j.lines.reduce((q,l)=>q+(+l.d||0),0),0),tC=all.reduce((x,j)=>x+j.lines.reduce((q,l)=>q+(+l.c||0),0),0);
+  const balanced=Math.abs(tD-tC)<0.01;
+  const reserveTarget=acR2(Math.max(0,ytd.ni)*(+s.taxPct||0)/100),reserve=acNet('1020',b,M);
+  const freeCash=acR2(cash-dep-cbp);
+  const goal=(db.bkgGoals||{})[t.slice(0,7)]||0;
+  const recent=[...all].reverse().slice(0,8);
+  const srcBadge=j=>j.src==='manual'?'':`<span class="badge bg-x">${j.src==='entry'?'⚓ entry':j.src==='payment'?'⚓ payment':j.src==='ap'?'⚓ A/P':'legacy'}</span>`;
+  return acHead('Accounting','Double-entry books — JN Customs Brokerage (sole proprietor) · books start '+acE(s.booksStart||'—'),AC_NEW_BTNS)+`
+  <div class="mg mg4">
+    <div class="mc b"><div class="ml">Cash on hand</div><div class="mv">${acF(cash)}</div><div class="ms">Free of client funds: ${acF(freeCash)}</div></div>
+    <div class="mc ${ytd.ni>=0?'g':'r'}"><div class="ml">Net income — YTD ${y}</div><div class="mv">${acF(ytd.ni)}</div><div class="ms">This month ${acF(mtd.ni)}${goal?' / goal '+acF(goal):''}</div></div>
+    <div class="mc w"><div class="ml">Loans outstanding</div><div class="mv">${acF(loans)}</div><div class="ms">Credit card ${acF(card)} · A/P ${acF(ap)}</div></div>
+    <div class="mc p"><div class="ml">Client funds held</div><div class="mv">${acF(dep+cbp)}</div><div class="ms">Deposits ${acF(dep)} · owed CBP ${acF(cbp)}</div></div>
+  </div>
+  <div class="mg mg4">
+    <div class="mc"><div class="ml">Accounts receivable</div><div class="mv" style="font-size:17px">${acF(ar)}</div><div class="ms">Billed, not yet collected</div></div>
+    <div class="mc"><div class="ml">Reimbursable costs</div><div class="mv" style="font-size:17px">${acF(adv)}</div><div class="ms">Paid for clients, to be recovered</div></div>
+    <div class="mc"><div class="ml">Tax reserve</div><div class="mv" style="font-size:17px;color:${reserve>=reserveTarget?'var(--green)':'var(--gold)'}">${acF(reserve)}</div><div class="ms">Target ${acF(reserveTarget)} (${+s.taxPct||0}% of YTD profit)</div></div>
+    <div class="mc"><div class="ml">Books check</div><div class="mv" style="font-size:17px;color:${balanced?'var(--green)':'var(--red)'}">${balanced?'Balanced':'Out of balance'}</div><div class="ms">Debits ${acF(tD)} = Credits ${acF(tC)}</div></div>
+  </div>
+  ${freeCash<0?`<div class="ac-alert">⚠ Cash is lower than client funds you are holding (${acF(dep+cbp)}). Operating spending is using client money.</div>`:''}
+  <div class="sc" style="padding:16px 18px;margin-bottom:18px"><div class="ttl" style="margin-bottom:10px">Income vs expenses — last 12 months</div><div style="position:relative;height:200px"><canvas id="ac-chart" role="img" aria-label="Monthly income and expenses"></canvas></div></div>
+  <div class="tw"><div class="tt"><span class="ttl">Latest journal entries</span><button class="btn btn-sm" onclick="acGo('journal')">Open journal</button></div><div class="ac-wrap"><table>
+  <thead><tr><th>Date</th><th>Ref</th><th>Description</th><th>Accounts</th><th style="text-align:right">Amount</th></tr></thead><tbody>
+  ${recent.map(j=>{const amt=j.lines.reduce((s,l)=>s+(+l.d||0),0);return `<tr class="clickable" onclick="acOpenEntry('${j.id}')"><td class="mn">${j.date}</td><td class="mn">${acE(j.ref||'—')}</td><td>${acE(j.party?j.party+' — ':'')}${acE(j.memo||(AC_TPL[j.kind]||{}).t||'')} ${srcBadge(j)}</td><td style="font-size:11px">${j.lines.map(l=>(l.d?'Dr ':'Cr ')+l.a).join(' / ')}</td><td class="mn" style="text-align:right">${acF(amt)}</td></tr>`;}).join('')||'<tr><td colspan="5"><div class="empty"><div class="empty-t">No entries yet — record the first loan draw or expense.</div></div></td></tr>'}
+  </tbody></table></div></div>`;
+}
+let acChart=null;
+function acDrawChart(M){
+  const el=gid('ac-chart');if(!el||!window.Chart)return;
+  if(acChart){acChart.destroy();acChart=null;}
+  const now=new Date(),months=[];for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
+  const inc={},exp={};months.forEach(m=>{inc[m]=0;exp[m]=0;});
+  acAll(months[0]+'-01','').forEach(j=>{const m=j.date.slice(0,7);if(!(m in inc))return;j.lines.forEach(l=>{const a=M[l.a];if(!a)return;if(a.type==='INCOME')inc[m]+=(+l.c||0)-(+l.d||0);if(a.type==='EXPENSE')exp[m]+=(+l.d||0)-(+l.c||0);});});
+  acChart=new Chart(el.getContext('2d'),{type:'bar',data:{labels:months.map(monthLabel),datasets:[
+    {label:'Income',data:months.map(m=>acR2(inc[m])),backgroundColor:'rgba(10,138,92,.25)',borderColor:'#0A8A5C',borderWidth:1.5,borderRadius:4},
+    {label:'Expenses',data:months.map(m=>acR2(exp[m])),backgroundColor:'rgba(192,57,43,.18)',borderColor:'#C0392B',borderWidth:1.5,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:10}}}},scales:{x:{ticks:{font:{size:10},color:'#7A9BBB'},grid:{display:false}},y:{ticks:{font:{size:10},color:'#7A9BBB',callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'k':v)},grid:{color:'#D0DFF0'}}}}});
+}
+function acGo(pg){const item=document.querySelector(`#nav-bookkeeping .nav-item[onclick*="acct-${pg}'"]`);showPage('acct-'+pg,item);}
+
+// ── Journal ──
+function acJournal(M){
+  const P=acPeriod(),q=(acS.q||'').toLowerCase();
+  let list=acAll(P.from,P.to);
+  if(acS.src==='MANUAL')list=list.filter(j=>j.src==='manual');
+  else if(acS.src==='AUTO')list=list.filter(j=>j.kind==='AUTO');
+  else if(acS.src==='LEGACY')list=list.filter(j=>j.src==='legacy');
+  if(q)list=list.filter(j=>[j.ref,j.party,j.memo,j.date].concat(j.lines.map(l=>acName(l.a,M))).join(' ').toLowerCase().includes(q));
+  list=list.reverse();
+  let tD=0,tC=0;
+  const chip=(k,l)=>`<span class="fp${acS.src===k?' fa':''}" onclick="acS.src='${k}';acRefresh()">${l}</span>`;
+  const rows=list.map(j=>{
+    const editable=j.kind!=='AUTO';
+    const lock=db.acctSettings.lockThrough&&j.date<=db.acctSettings.lockThrough;
+    const kindL=j.kind==='AUTO'?`<span class="badge bg-x">⚓ ${j.src}</span>`:`<span class="badge ${j.src==='legacy'?'bg-w':'bg-b'}">${acE((AC_TPL[j.kind]||{}).t||j.kind||'Journal')}</span>`;
+    let h=`<tr class="ac-jhead"><td class="mn">${j.date}</td><td class="mn">${acE(j.ref||'—')}</td><td colspan="3"><b style="color:var(--t1)">${acE(j.party||'')}</b>${j.party?' — ':''}${acE(j.memo||'')} ${kindL}${j.doc?` <a href="${acE(j.doc)}" target="_blank" rel="noopener" class="ac-link">📎 doc</a>`:''}</td>
+      <td class="ac-noprint" style="text-align:right;white-space:nowrap">${editable?(lock?'<span class="ac-muted">🔒</span>':`<button class="btn btn-sm" onclick="acOpenEntry('${j.id}')">Edit</button> <button class="btn btn-sm btn-danger" onclick="acDelete('${j.id}')">✕</button>`):'<span class="ac-muted" title="Edit the source record in Brokerage">auto</span>'}</td></tr>`;
+    j.lines.forEach(l=>{tD+=+l.d||0;tC+=+l.c||0;h+=`<tr class="ac-line"><td></td><td></td><td style="padding-left:${l.c?42:22}px">${acE(acName(l.a,M))}</td><td class="ac-num">${l.d?acF(l.d):''}</td><td class="ac-num">${l.c?acF(l.c):''}</td><td class="ac-noprint"></td></tr>`;});
+    return h;}).join('');
+  return acHead('Journal','Every transaction as debits and credits · '+P.label,AC_NEW_BTNS+`<button class="btn btn-sm" onclick="acExportJournal()">⬇ CSV</button>`)+`
+  <div class="tw"><div class="tt"><div class="ac-bar">${acPeriodBar()}${chip('ALL','All')}${chip('MANUAL','Manual')}${chip('AUTO','Auto')}${chip('LEGACY','Legacy')}</div>
+  <input class="si" placeholder="Search ref, party, account…" value="${acE(acS.q)}" onchange="acS.q=this.value;acRefresh()"/></div>
+  <div class="ac-wrap"><table><thead><tr><th>Date</th><th>Ref</th><th>Account / description</th><th style="text-align:right">Debit</th><th style="text-align:right">Credit</th><th class="ac-noprint"></th></tr></thead>
+  <tbody>${rows||'<tr><td colspan="6"><div class="empty"><div class="empty-t">No entries in this period</div></div></td></tr>'}</tbody>
+  <tfoot><tr class="ac-tot"><td colspan="3">Totals — ${list.length} entries</td><td class="ac-num">${acF(tD)}</td><td class="ac-num">${acF(tC)}</td><td class="ac-noprint"></td></tr></tfoot></table></div></div>`;
+}
+function acExportJournal(){
+  ensureAcct();const M=acMap(),P=acPeriod();
+  const rows=[['Date','Entry ID','Ref','Party','Memo','Type','Source','Account','Account name','Debit','Credit']];
+  acAll(P.from,P.to).forEach(j=>j.lines.forEach(l=>rows.push([j.date,j.id,j.ref||'',j.party||'',j.memo||'',j.kind||'',j.src||'',l.a,(M[l.a]||{}).name||'',l.d||'',l.c||''])));
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='JN_journal_'+today()+'.csv';a.click();
+}
+
+// ── General ledger ──
+function acLedger(M){
+  const P=acPeriod(),code=acS.acct||'1000',a=M[code];
+  const before=P.from?acBal(acAll('',acPrevDay(P.from))):{};
+  let run=P.from?acNet(code,before,M):0;const open=run;
+  const dn=a?AC_DR_NORMAL[a.type]:true;
+  let tD=0,tC=0;
+  const rows=[];
+  acAll(P.from,P.to).forEach(j=>j.lines.filter(l=>l.a===code).forEach(l=>{
+    const d=+l.d||0,c=+l.c||0;tD+=d;tC+=c;run=acR2(run+(dn?d-c:c-d));
+    rows.push(`<tr class="clickable" onclick="acOpenEntry('${j.id}')"><td class="mn">${j.date}</td><td class="mn">${acE(j.ref||'—')}</td><td>${acE(j.party?j.party+' — ':'')}${acE(j.memo||'')}</td><td style="font-size:11px;color:var(--t3)">${acE(j.lines.filter(x=>x.a!==code).map(x=>x.a).join(', '))}</td><td class="ac-num">${d?acF(d):''}</td><td class="ac-num">${c?acF(c):''}</td><td class="ac-num">${acF(run)}</td></tr>`);
+  }));
+  return acHead('General ledger','One account, every movement, running balance · '+P.label,`<button class="btn btn-sm" onclick="window.print()">Print</button>`)+`
+  <div class="tw"><div class="tt"><div class="ac-bar"><select class="ac-in" style="min-width:260px" onchange="acS.acct=this.value;acRefresh()">${acOpts('any',code,M,true)}</select>${acPeriodBar()}</div>
+  <span class="ac-muted">${a?acE(a.ko)+' · '+AC_TYPE_LABEL[a.type]+(a.sc?' · Sch C line '+a.sc:''):''}</span></div>
+  <div class="ac-wrap"><table><thead><tr><th>Date</th><th>Ref</th><th>Description</th><th>Offset</th><th style="text-align:right">Debit</th><th style="text-align:right">Credit</th><th style="text-align:right">Balance</th></tr></thead><tbody>
+  <tr class="ac-sec"><td colspan="6">Opening balance</td><td class="ac-num">${acF(open)}</td></tr>
+  ${rows.join('')||'<tr><td colspan="7"><div class="empty" style="padding:20px"><div class="empty-t">No activity in this period</div></div></td></tr>'}
+  <tr class="ac-tot"><td colspan="4">Closing balance</td><td class="ac-num">${acF(tD)}</td><td class="ac-num">${acF(tC)}</td><td class="ac-num">${acF(run)}</td></tr></tbody></table></div></div>`;
+}
+function acPrevDay(d){const x=new Date(d+'T12:00:00');x.setDate(x.getDate()-1);return x.toISOString().slice(0,10);}
+
+// ── Bank reconciliation ──
+function acReconcile(M){
+  const code=acS.recAcct||'1000',a=M[code];if(!acS.recDate)acS.recDate=today();
+  const lines=[];acAll('',acS.recDate).forEach(j=>j.lines.forEach((l,i)=>{if(l.a===code)lines.push({j,l,key:j.id+'|'+code+'|'+i});}));
+  const dn=a?AC_DR_NORMAL[a.type]:true;const amt=l=>acR2(dn?(+l.d||0)-(+l.c||0):(+l.c||0)-(+l.d||0));
+  const cleared=acR2(lines.filter(x=>db.acctCleared[x.key]).reduce((s,x)=>s+amt(x.l),0));
+  const book=acR2(lines.reduce((s,x)=>s+amt(x.l),0));
+  const stmt=acS.recBal===''?null:acR2(acS.recBal);const diff=stmt==null?null:acR2(stmt-cleared);
+  const last=db.acctRecon.filter(r=>r.acct===code).sort((x,y)=>y.date.localeCompare(x.date))[0];
+  const open=lines.filter(x=>!db.acctCleared[x.key]).reverse(),done=lines.filter(x=>db.acctCleared[x.key]).reverse().slice(0,40);
+  const row=x=>`<tr><td><input type="checkbox" ${db.acctCleared[x.key]?'checked':''} onchange="acToggleClear('${x.key}',this.checked)"/></td><td class="mn">${x.j.date}</td><td class="mn">${acE(x.j.ref||'—')}</td><td>${acE(x.j.party?x.j.party+' — ':'')}${acE(x.j.memo||'')}</td><td class="ac-num" style="color:${amt(x.l)>=0?'var(--green)':'var(--red)'}">${acF(amt(x.l))}</td></tr>`;
+  return acHead('Bank reconciliation','Tick every line that appears on the bank or card statement until the difference is zero',
+    `<button class="btn btn-sm btn-p" ${diff===0?'':'disabled'} onclick="acFinishRecon()">Finish reconciliation</button>`)+`
+  <div class="sc" style="padding:14px 18px;margin-bottom:16px"><div class="ac-bar">
+    <select class="ac-in" onchange="acS.recAcct=this.value;acS.recBal='';acRefresh()">${acOpts('paysrc',code,M).replace(/<option value="2000"[^<]*<\/option>/,'')}</select>
+    <span class="ac-muted">Statement date</span><input type="date" class="ac-in" value="${acS.recDate}" onchange="acS.recDate=this.value;acRefresh()"/>
+    <span class="ac-muted">Statement ending balance</span><input type="number" step="0.01" class="ac-in" style="width:140px" value="${acS.recBal}" onchange="acS.recBal=this.value;acRefresh()"/>
+  </div>
+  <div class="mg mg4" style="margin:14px 0 0">
+    <div class="mc"><div class="ml">Balance per books</div><div class="mv" style="font-size:17px">${acF(book)}</div></div>
+    <div class="mc"><div class="ml">Cleared balance</div><div class="mv" style="font-size:17px">${acF(cleared)}</div></div>
+    <div class="mc"><div class="ml">Statement balance</div><div class="mv" style="font-size:17px">${stmt==null?'—':acF(stmt)}</div></div>
+    <div class="mc"><div class="ml">Difference</div><div class="mv" style="font-size:17px;color:${diff===0?'var(--green)':'var(--red)'}">${diff==null?'—':acF(diff)}</div><div class="ms">${last?'Last reconciled '+last.date+' at '+acF(last.bal):'Never reconciled'}</div></div>
+  </div></div>
+  <div class="two-col">
+    <div class="tw"><div class="tt"><span class="ttl">Uncleared (${open.length})</span></div><div class="ac-wrap"><table><thead><tr><th></th><th>Date</th><th>Ref</th><th>Description</th><th style="text-align:right">Amount</th></tr></thead><tbody>${open.map(row).join('')||'<tr><td colspan="5"><div class="empty" style="padding:18px"><div class="empty-t">Everything is cleared</div></div></td></tr>'}</tbody></table></div></div>
+    <div class="tw"><div class="tt"><span class="ttl">Cleared (latest 40)</span></div><div class="ac-wrap"><table><thead><tr><th></th><th>Date</th><th>Ref</th><th>Description</th><th style="text-align:right">Amount</th></tr></thead><tbody>${done.map(row).join('')||'<tr><td colspan="5"><div class="empty" style="padding:18px"><div class="empty-t">Nothing cleared yet</div></div></td></tr>'}</tbody></table></div></div>
+  </div>`;
+}
+function acToggleClear(key,on){if(on)db.acctCleared[key]=true;else delete db.acctCleared[key];save();acRefresh();}
+function acFinishRecon(){db.acctRecon.push({acct:acS.recAcct||'1000',date:acS.recDate||today(),bal:acR2(acS.recBal),at:new Date().toISOString()});save();acRefresh();toast('✓ Reconciliation saved');}
+
+// ── Loans ──
+function acLoanMeta(code){return db.acctLoans.find(l=>l.acct===code)||{acct:code,lender:'',relation:'',rate:'',noteDate:'',maturity:'',terms:'',doc:''};}
+function acLoans(M){
+  const t=today(),y=t.slice(0,4),all=acAll('',t);
+  const loansA=Object.values(M).filter(a=>a.flags.includes('loan')&&!a.off);
+  const cards=loansA.map(a=>{
+    const meta=acLoanMeta(a.code);let drawn=0,repaid=0,intAll=0,intY=0;const hist=[];
+    all.forEach(j=>{const ls=j.lines.filter(l=>l.a===a.code);if(!ls.length)return;
+      const c=ls.reduce((s,l)=>s+(+l.c||0),0),d=ls.reduce((s,l)=>s+(+l.d||0),0);drawn+=c;repaid+=d;
+      const it=j.lines.filter(l=>l.a==='5400').reduce((s,l)=>s+(+l.d||0)-(+l.c||0),0);intAll+=it;if(j.date.slice(0,4)===y)intY+=it;
+      hist.push({j,c,d,it});});
+    const bal=acR2(drawn-repaid);
+    return `<div class="sc" style="margin-bottom:18px"><div class="sc-hdr" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px">
+      <div><div style="font-weight:700;color:var(--t1);font-size:14px">${a.code} ${acE(a.name)} <span class="ac-ko">${acE(a.ko)}</span></div>
+      <div class="ac-muted" style="margin-top:3px">Lender: ${acE(meta.lender||'— not set')}${meta.relation?' ('+acE(meta.relation)+')':''} · Rate ${meta.rate!==''&&meta.rate!=null?acE(meta.rate)+'%':'—'} · Note signed ${acE(meta.noteDate||'—')} · Maturity ${acE(meta.maturity||'—')}${meta.terms?' · '+acE(meta.terms):''}${meta.doc?` · <a class="ac-link" target="_blank" rel="noopener" href="${acE(meta.doc)}">📎 promissory note</a>`:''}</div></div>
+      <div class="ac-noprint" style="display:flex;gap:6px"><button class="btn btn-sm" onclick="acEditLoan('${a.code}')">Loan terms</button><button class="btn btn-sm btn-inc" onclick="openAcctTx('LOAN_IN',{cr:'${a.code}',party:${JSON.stringify(meta.lender||'').replace(/"/g,'&quot;')}})">+ Draw</button><button class="btn btn-sm btn-exp" onclick="openAcctTx('LOAN_PAY',{loan:'${a.code}',party:${JSON.stringify(meta.lender||'').replace(/"/g,'&quot;')}})">Repay</button></div></div>
+      <div class="mg mg4" style="padding:14px 16px 0;margin:0">
+        <div class="mc w"><div class="ml">Balance owed</div><div class="mv">${acF(bal)}</div></div>
+        <div class="mc"><div class="ml">Total borrowed</div><div class="mv" style="font-size:17px">${acF(drawn)}</div></div>
+        <div class="mc"><div class="ml">Principal repaid</div><div class="mv" style="font-size:17px">${acF(repaid)}</div></div>
+        <div class="mc"><div class="ml">Interest paid</div><div class="mv" style="font-size:17px">${acF(intAll)}</div><div class="ms">${y}: ${acF(intY)}${intY>=600?' — 1099-INT may be required':''}</div></div>
+      </div>
+      ${!meta.noteDate?'<div class="ac-alert" style="margin:12px 16px 0">Add the promissory note date and terms. A signed note with an interest rate and repayment schedule is what separates a loan from a gift.</div>':''}
+      <div class="ac-wrap" style="margin-top:12px"><table><thead><tr><th>Date</th><th>Ref</th><th>Description</th><th style="text-align:right">Borrowed</th><th style="text-align:right">Principal repaid</th><th style="text-align:right">Interest</th></tr></thead><tbody>
+      ${hist.map(h=>`<tr class="clickable" onclick="acOpenEntry('${h.j.id}')"><td class="mn">${h.j.date}</td><td class="mn">${acE(h.j.ref||'—')}</td><td>${acE(h.j.memo||'')}</td><td class="ac-num">${h.c?acF(h.c):''}</td><td class="ac-num">${h.d?acF(h.d):''}</td><td class="ac-num">${h.it?acF(h.it):''}</td></tr>`).join('')||'<tr><td colspan="6"><div class="empty" style="padding:18px"><div class="empty-t">No draws yet — use + Draw when the money lands in the business account.</div></div></td></tr>'}
+      </tbody></table></div></div>`;
+  });
+  return acHead('Loans','Money borrowed by the business, repayments and interest',`<button class="btn btn-sm" onclick="acGo('setup')">+ New loan account</button>`)+cards.join('')+
+  `<div class="sc" style="padding:14px 18px"><div class="ttl" style="margin-bottom:8px">Family loan checklist</div><div class="ac-muted" style="line-height:1.8;font-size:12px">
+  1. Signed promissory note (amount, rate, schedule, both signatures) — attach the Drive link under Loan terms.<br>
+  2. Move money bank-to-bank into the business account, and repay from it. No cash.<br>
+  3. Loans between individuals up to $100,000 generally avoid imputed interest when the borrower's net investment income is $1,000 or less — confirm with your CPA.<br>
+  4. Interest paid is deductible on Schedule C line 16b. Principal is never an expense.<br>
+  5. If the business pays $600+ interest to one lender in a year, a 1099-INT may be due by Jan 31. Non-U.S. lenders: talk to your CPA about withholding first.</div></div>`;
+}
+function acEditLoan(code){ensureAcct();acEdit={kind:'LOANMETA',code};acModalRender();openModal('acct-modal');}
+
+// ── Profit & loss ──
+function acPLPage(M){
+  const P=acPeriod(),r=acPL(P.from,P.to,M);
+  const pct=v=>r.ti?(v/r.ti*100).toFixed(1)+'%':'';
+  const row=x=>`<tr class="clickable" onclick="acS.acct='${x.a.code}';acGo('ledger')"><td>${x.a.code} ${acE(x.a.name)}<span class="ac-ko">${acE(x.a.ko)}</span></td><td class="ac-muted">${x.a.sc?'L'+x.a.sc:''}</td><td class="ac-num">${acF(x.v)}</td><td class="ac-num ac-muted">${pct(x.v)}</td></tr>`;
+  return acHead('Profit & loss','Income statement · '+P.label+' · accrual basis',`<button class="btn btn-sm" onclick="window.print()">Print</button>`)+`
+  <div class="tw"><div class="tt"><div class="ac-bar">${acPeriodBar()}</div><span class="ac-muted">Client duties, deposits and loans never touch this report</span></div><div class="ac-wrap"><table>
+  <thead><tr><th>Account</th><th>Sch C</th><th style="text-align:right">Amount</th><th style="text-align:right">% of income</th></tr></thead><tbody>
+  <tr class="ac-sec"><td colspan="4">Income</td></tr>${r.inc.map(row).join('')||'<tr><td colspan="4" class="ac-muted">No income</td></tr>'}
+  <tr class="ac-tot"><td colspan="2">Total income</td><td class="ac-num">${acF(r.ti)}</td><td></td></tr>
+  <tr class="ac-sec"><td colspan="4">Expenses</td></tr>${r.exp.map(row).join('')||'<tr><td colspan="4" class="ac-muted">No expenses</td></tr>'}
+  <tr class="ac-tot"><td colspan="2">Total expenses</td><td class="ac-num">${acF(r.te)}</td><td class="ac-num ac-muted">${pct(r.te)}</td></tr>
+  <tr class="ac-grand"><td colspan="2">Net income</td><td class="ac-num" style="color:${r.ni>=0?'var(--green)':'var(--red)'}">${acF(r.ni)}</td><td class="ac-num ac-muted">${pct(r.ni)}</td></tr>
+  </tbody></table></div></div>`;
+}
+
+// ── Balance sheet ──
+function acBSData(asOf,M){
+  const y=asOf.slice(0,4),b=acBal(acAll('',asOf));
+  const sec=type=>Object.values(M).filter(a=>a.type===type).map(a=>({a,v:acNet(a.code,b,M)})).filter(x=>Math.abs(x.v)>=0.005);
+  const prior=acPL('',(+y-1)+'-12-31',M).ni,cur=acPL(y+'-01-01',asOf,M).ni;
+  const A=sec('ASSET'),L=sec('LIABILITY'),E=sec('EQUITY');
+  const tA=acR2(A.reduce((s,x)=>s+x.v,0)),tL=acR2(L.reduce((s,x)=>s+x.v,0)),tE=acR2(E.reduce((s,x)=>s+x.v,0)+prior+cur);
+  return{A,L,E,prior,cur,tA,tL,tE,ok:Math.abs(tA-tL-tE)<0.01};
+}
+function acBS(M){
+  if(!acS.asOf)acS.asOf=today();const r=acBSData(acS.asOf,M);
+  const row=x=>`<tr class="clickable" onclick="acS.acct='${x.a.code}';acS.p='all';acGo('ledger')"><td style="padding-left:24px">${x.a.code} ${acE(x.a.name)}<span class="ac-ko">${acE(x.a.ko)}</span>${x.a.flags.includes('pt')?' <span class="badge bg-p">client funds</span>':''}</td><td class="ac-num">${acF(x.v)}</td></tr>`;
+  const grp=(list,test,label)=>{const g=list.filter(test);return g.length?`<tr><td class="ac-muted" style="padding-left:14px;font-size:11px">${label}</td><td></td></tr>`+g.map(row).join(''):'';};
+  return acHead('Balance sheet','What the business owns and owes · as of '+acS.asOf,`<button class="btn btn-sm" onclick="window.print()">Print</button>`)+`
+  <div class="tw"><div class="tt"><div class="ac-bar">${acAsOfBar()}</div><span class="badge ${r.ok?'bg-g':'bg-r'}">${r.ok?'Assets = Liabilities + Equity':'Out of balance'}</span></div><div class="ac-wrap"><table><tbody>
+  <tr class="ac-sec"><td>Assets</td><td></td></tr>
+  ${grp(r.A,x=>x.a.flags.includes('cash'),'Cash')}${grp(r.A,x=>!x.a.flags.includes('cash')&&!x.a.flags.includes('fixed'),'Receivables & other current')}${grp(r.A,x=>x.a.flags.includes('fixed'),'Fixed assets')}
+  <tr class="ac-tot"><td>Total assets</td><td class="ac-num">${acF(r.tA)}</td></tr>
+  <tr class="ac-sec"><td>Liabilities</td><td></td></tr>
+  ${grp(r.L,x=>!x.a.flags.includes('loan'),'Current')}${grp(r.L,x=>x.a.flags.includes('loan'),'Loans')}
+  <tr class="ac-tot"><td>Total liabilities</td><td class="ac-num">${acF(r.tL)}</td></tr>
+  <tr class="ac-sec"><td>Owner's equity</td><td></td></tr>
+  ${r.E.map(row).join('')}
+  <tr><td style="padding-left:24px">Net income — prior years</td><td class="ac-num">${acF(r.prior)}</td></tr>
+  <tr><td style="padding-left:24px">Net income — ${acS.asOf.slice(0,4)} to date</td><td class="ac-num">${acF(r.cur)}</td></tr>
+  <tr class="ac-tot"><td>Total equity</td><td class="ac-num">${acF(r.tE)}</td></tr>
+  <tr class="ac-grand"><td>Total liabilities + equity</td><td class="ac-num">${acF(r.tL+r.tE)}</td></tr>
+  </tbody></table></div></div>`;
+}
+
+// ── Cash flow ──
+function acCF(M){
+  const P=acPeriod();const isCash=c=>M[c]&&M[c].flags.includes('cash');
+  const openB=P.from?acBal(acAll('',acPrevDay(P.from))):{};
+  const open=acSumBy(a=>a.flags.includes('cash'),openB,M);
+  const g={Operating:{},Investing:{},Financing:{}};
+  acAll(P.from,P.to).forEach(j=>{if(!j.lines.some(l=>isCash(l.a)))return;
+    j.lines.forEach(l=>{if(isCash(l.a))return;const a=M[l.a];const sec=a&&(a.flags.includes('loan')||a.type==='EQUITY')?'Financing':a&&a.flags.includes('fixed')?'Investing':'Operating';
+      g[sec][l.a]=(g[sec][l.a]||0)+(+l.c||0)-(+l.d||0);});});
+  let net=0;
+  const body=Object.keys(g).map(sec=>{const items=Object.entries(g[sec]).filter(x=>Math.abs(x[1])>=0.005).sort();const tot=acR2(items.reduce((s,x)=>s+x[1],0));net+=tot;
+    return `<tr class="ac-sec"><td>${sec} activities</td><td></td></tr>`+items.map(([c,v])=>`<tr><td style="padding-left:24px">${acE(acName(c,M))}</td><td class="ac-num">${acF(v)}</td></tr>`).join('')+`<tr class="ac-tot"><td>Net cash from ${sec.toLowerCase()}</td><td class="ac-num">${acF(tot)}</td></tr>`;}).join('');
+  const closeB=acSumBy(a=>a.flags.includes('cash'),acBal(acAll('',P.to||'')),M);
+  return acHead('Cash flow','Where cash came from and went · '+P.label+' · inflow positive, outflow in brackets',`<button class="btn btn-sm" onclick="window.print()">Print</button>`)+`
+  <div class="tw"><div class="tt"><div class="ac-bar">${acPeriodBar()}</div><span class="ac-muted">Loans and owner money show under Financing</span></div><div class="ac-wrap"><table><tbody>
+  <tr><td>Cash at start of period</td><td class="ac-num">${acF(open)}</td></tr>${body}
+  <tr class="ac-tot"><td>Net change in cash</td><td class="ac-num">${acF(net)}</td></tr>
+  <tr class="ac-grand"><td>Cash at end of period</td><td class="ac-num">${acF(open+net)}</td></tr>
+  ${Math.abs(open+net-closeB)>=0.01?`<tr><td colspan="2" style="color:var(--red)">⚠ Check: ledger cash is ${acF(closeB)}</td></tr>`:''}
+  </tbody></table></div></div>`;
+}
+
+// ── Trial balance ──
+function acTB(M){
+  if(!acS.asOf)acS.asOf=today();const b=acBal(acAll('',acS.asOf));let tD=0,tC=0;
+  const rows=Object.values(M).map(a=>{const x=b[a.code];if(!x)return '';const n=acR2(x.d-x.c);if(Math.abs(n)<0.005)return '';const d=n>0?n:0,c=n<0?-n:0;tD+=d;tC+=c;
+    return `<tr class="clickable" onclick="acS.acct='${a.code}';acS.p='all';acGo('ledger')"><td class="mn">${a.code}</td><td>${acE(a.name)}<span class="ac-ko">${acE(a.ko)}</span></td><td class="ac-muted">${AC_TYPE_LABEL[a.type]}</td><td class="ac-num">${d?acF(d):''}</td><td class="ac-num">${c?acF(c):''}</td></tr>`;}).join('');
+  const ok=Math.abs(tD-tC)<0.01;
+  return acHead('Trial balance','Every account with a balance · as of '+acS.asOf,`<button class="btn btn-sm" onclick="window.print()">Print</button>`)+`
+  <div class="tw"><div class="tt"><div class="ac-bar">${acAsOfBar()}</div><span class="badge ${ok?'bg-g':'bg-r'}">${ok?'Debits = Credits':'Difference '+acF(tD-tC)}</span></div><div class="ac-wrap"><table>
+  <thead><tr><th>Code</th><th>Account</th><th>Type</th><th style="text-align:right">Debit</th><th style="text-align:right">Credit</th></tr></thead><tbody>${rows||'<tr><td colspan="5"><div class="empty"><div class="empty-t">No balances yet</div></div></td></tr>'}</tbody>
+  <tfoot><tr class="ac-grand"><td colspan="3">Totals</td><td class="ac-num">${acF(tD)}</td><td class="ac-num">${acF(tC)}</td></tr></tfoot></table></div></div>`;
+}
+
+// ── Tax / Schedule C ──
+function acTax(M){
+  const t=today();if(!acS.year)acS.year=t.slice(0,4);const y=acS.year;const to=y===t.slice(0,4)?t:y+'-12-31';
+  const r=acPL(y+'-01-01',to,M);
+  const gross=acR2(r.inc.filter(x=>x.a.sc!=='6').reduce((s,x)=>s+x.v,0)),other=acR2(r.inc.filter(x=>x.a.sc==='6').reduce((s,x)=>s+x.v,0));
+  const lines={};r.exp.forEach(x=>{const k=x.a.sc||'27a';lines[k]=(lines[k]||0)+x.v;});
+  const meals=lines['24b']||0;if(meals)lines['24b']=acR2(meals*0.5);
+  const totExp=acR2(Object.values(lines).reduce((s,v)=>s+v,0)),net=acR2(gross+other-totExp);
+  const base=net>0?acR2(net*0.9235):0,se=base>=400?acR2(Math.min(base,AC_SS_WAGE_BASE)*0.124+base*0.029):0;
+  const pct=+db.acctSettings.taxPct||0,setAside=acR2(Math.max(0,net)*pct/100);
+  const yrs=[...new Set([t.slice(0,4),String(+t.slice(0,4)-1)].concat(db.acctJournal.map(j=>j.date.slice(0,4))))].sort().reverse();
+  const intByLoan=Object.values(M).filter(a=>a.flags.includes('loan')).map(a=>{let it=0;acAll(y+'-01-01',y+'-12-31').forEach(j=>{if(j.lines.some(l=>l.a===a.code))it+=j.lines.filter(l=>l.a==='5400').reduce((s,l)=>s+(+l.d||0)-(+l.c||0),0);});return{a,it:acR2(it),m:acLoanMeta(a.code)};}).filter(x=>x.it>0);
+  return acHead('Tax — Schedule C','Estimate for planning only. Your CPA prepares the actual return.',`<button class="btn btn-sm" onclick="window.print()">Print</button>`)+`
+  <div class="tw" style="margin-bottom:18px"><div class="tt"><div class="ac-bar"><span class="ac-muted">Tax year</span><select class="ac-in" onchange="acS.year=this.value;acRefresh()">${yrs.map(v=>`<option${v===y?' selected':''}>${v}</option>`).join('')}</select></div><span class="ac-muted">${to===t?'Through '+t:'Full year'}</span></div>
+  <div class="ac-wrap"><table><thead><tr><th>Line</th><th>Description</th><th style="text-align:right">Amount</th></tr></thead><tbody>
+  <tr><td class="mn">1</td><td>${AC_SC['1']}</td><td class="ac-num">${acF(gross)}</td></tr>
+  ${other?`<tr><td class="mn">6</td><td>${AC_SC['6']}</td><td class="ac-num">${acF(other)}</td></tr>`:''}
+  <tr class="ac-tot"><td class="mn">7</td><td>Gross income</td><td class="ac-num">${acF(gross+other)}</td></tr>
+  ${AC_SC_ORDER.filter(k=>lines[k]).map(k=>`<tr><td class="mn">${k}</td><td>${AC_SC[k]}${k==='24b'?' <span class="ac-muted">(50% of '+acF(meals)+')</span>':''}</td><td class="ac-num">${acF(lines[k])}</td></tr>`).join('')}
+  <tr class="ac-tot"><td class="mn">28</td><td>Total expenses</td><td class="ac-num">${acF(totExp)}</td></tr>
+  <tr class="ac-grand"><td class="mn">31</td><td>Net profit (loss)</td><td class="ac-num" style="color:${net>=0?'var(--green)':'var(--red)'}">${acF(net)}</td></tr>
+  </tbody></table></div></div>
+  <div class="two-col">
+    <div class="sc" style="padding:16px 18px"><div class="ttl" style="margin-bottom:10px">Self-employment tax (Schedule SE)</div><table><tbody>
+      <tr><td>Net earnings × 92.35%</td><td class="ac-num">${acF(base)}</td></tr>
+      <tr><td>SE tax (12.4% up to ${acF(AC_SS_WAGE_BASE)} + 2.9%)</td><td class="ac-num">${acF(se)}</td></tr>
+      <tr><td>Deductible half of SE tax</td><td class="ac-num">${acF(se/2)}</td></tr>
+      <tr class="ac-tot"><td>Suggested set-aside (${pct}% of profit)</td><td class="ac-num">${acF(setAside)}</td></tr></tbody></table>
+      <div class="ac-muted" style="margin-top:8px;font-size:11px">Income tax depends on your whole return. The set-aside rate is set under Accounts & setup.</div></div>
+    <div class="sc" style="padding:16px 18px"><div class="ttl" style="margin-bottom:10px">Estimated payment calendar — ${y}</div><table><tbody>
+      <tr><td>Apr 15, ${y}</td><td>Federal 1040-ES Q1 · CA 540-ES 30%</td></tr>
+      <tr><td>Jun 15, ${y}</td><td>Federal Q2 · CA 40%</td></tr>
+      <tr><td>Sep 15, ${y}</td><td>Federal Q3</td></tr>
+      <tr><td>Jan 15, ${+y+1}</td><td>Federal Q4 · CA 30%</td></tr>
+      <tr><td>Jan 31, ${+y+1}</td><td>1099-NEC to contractors paid $600+; 1099-INT if the business paid $600+ interest to a lender</td></tr></tbody></table>
+      ${intByLoan.length?`<div class="ac-alert" style="margin-top:10px">${intByLoan.map(x=>`${acE(x.a.name)}${x.m.lender?' ('+acE(x.m.lender)+')':''}: interest ${acF(x.it)}${x.it>=600?' — 1099-INT threshold reached':''}`).join('<br>')}</div>`:''}</div>
+  </div>`;
+}
+
+// ── Setup: settings, chart of accounts, legacy import, goals ──
+function acSetup(M){
+  const s=db.acctSettings;
+  const legacy=(db.bkgTransactions||[]).filter(t=>!t.auto&&t.date>=(s.booksStart||'')&&!db.acctLegacyDone.includes(t.id));
+  const legacyOld=(db.bkgTransactions||[]).filter(t=>!t.auto&&t.date<(s.booksStart||''));
+  const b=acBal(acAll('',today()));
+  const cb=(k,l)=>`<label class="ac-chk"><input type="checkbox" ${s[k]?'checked':''} onchange="acSet('${k}',this.checked)"/> ${l}</label>`;
+  const coaRows=['ASSET','LIABILITY','EQUITY','INCOME','EXPENSE'].map(tp=>`<tr class="ac-sec"><td colspan="6">${AC_TYPE_LABEL[tp]}</td></tr>`+Object.values(M).filter(a=>a.type===tp).map(a=>`<tr style="${a.off?'opacity:.45':''}">
+    <td class="mn">${a.code}</td><td class="hi">${acE(a.name)}<span class="ac-ko">${acE(a.ko)}</span></td><td class="ac-muted">${a.sc?'L'+a.sc:''}</td>
+    <td>${a.flags.filter(f=>f!=='lock').map(f=>`<span class="badge bg-x">${{cash:'cash',card:'card',loan:'loan',pt:'client funds',fixed:'fixed'}[f]||f}</span>`).join(' ')}</td>
+    <td class="ac-num">${b[a.code]?acF(acNet(a.code,b,M)):''}</td>
+    <td class="ac-noprint" style="white-space:nowrap;text-align:right"><button class="btn btn-sm" onclick="acRenameAcct('${a.code}')">Rename</button> ${a.flags.includes('lock')?'<span class="ac-muted" title="Required by the app">🔒</span>':`<button class="btn btn-sm" onclick="acToggleAcct('${a.code}')">${a.off?'Activate':'Hide'}</button>`}${!a.base?` <button class="btn btn-sm btn-danger" onclick="acRemoveAcct('${a.code}')">✕</button>`:''}</td></tr>`).join('')).join('');
+  const now=new Date(),months=[];for(let i=-2;i<10;i++){const d=new Date(now.getFullYear(),now.getMonth()+i,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
+  return acHead('Accounts & setup','Chart of accounts, posting rules and period lock','')+`
+  <div class="two-col">
+   <div class="sc" style="padding:16px 18px"><div class="ttl" style="margin-bottom:12px">Posting rules</div><div class="fg">
+    <div class="fgi"><label>Books start date</label><input type="date" value="${acE(s.booksStart)}" onchange="acSet('booksStart',this.value)"/></div>
+    <div class="fgi"><label>Lock books through</label><input type="date" value="${acE(s.lockThrough)}" onchange="acSet('lockThrough',this.value)"/></div>
+    <div class="fgi"><label>Client payments deposit to</label><select onchange="acSet('depositAcct',this.value)">${acOpts('cash',s.depositAcct,M)}</select></div>
+    <div class="fgi"><label>Vendor bills paid from</label><select onchange="acSet('payAcct',this.value)">${acOpts('paysrc',s.payAcct,M).replace(/<option value="2000"[^<]*<\/option>/,'')}</select></div>
+    <div class="fgi"><label>Tax set-aside % of profit</label><input type="number" min="0" max="60" value="${acE(s.taxPct)}" onchange="acSet('taxPct',parseFloat(this.value)||0)"/></div>
+    <div class="fgi s2">${cb('autoEntries','Post entries automatically (A/R ← broker fee)')}${cb('dutiesFlow','Duties, MPF and HMF are billed to clients and paid to CBP through my account')}${cb('autoPayments','Post invoice payments automatically (cash ← A/R)')}${cb('autoAp','Post A/P bills and payments automatically (billable costs → 1250)')}</div>
+   </div><div class="ac-muted" style="font-size:11px;margin-top:10px;line-height:1.6">Nothing dated before the books start date is posted. Entries dated on or before the lock date cannot be added, edited or deleted.</div></div>
+   <div class="sc" style="padding:16px 18px"><div class="ttl" style="margin-bottom:12px">Old bookkeeping log</div>
+    <div style="font-size:12px;line-height:1.7;color:var(--t2)">${legacy.length} manual transaction(s) on or after ${acE(s.booksStart)} are ready to import into the journal. ${legacyOld.length} older transaction(s) stay in the old log — records from before JN Customs belong to a different taxpayer (Exel Logistics Inc.) and should not be mixed into these books.</div>
+    <div class="ac-muted" style="font-size:11px;margin:8px 0">Income becomes Dr ${acE(s.depositAcct)} / Cr income account; seed-money categories go to Owner's Capital. Expenses become Dr expense / Cr ${acE(s.depositAcct)}. Auto-posted broker fees are skipped because entries post themselves. Review each imported line afterwards.</div>
+    <button class="btn btn-sm btn-p" ${legacy.length?'':'disabled'} onclick="acImportLegacy()">Import ${legacy.length} transaction(s)</button>
+    <div class="ttl" style="margin:18px 0 10px">Monthly profit goals</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">${months.map(m=>`<label style="font-size:11px;color:var(--t3)">${monthLabel(m)}<input type="number" class="ac-in" style="width:100%" value="${(db.bkgGoals||{})[m]||''}" placeholder="Goal $" onchange="setGoal('${m}',this.value)"/></label>`).join('')}</div>
+   </div>
+  </div>
+  <div class="tw"><div class="tt"><span class="ttl">Chart of accounts</span><div class="ac-bar ac-noprint">
+    <input class="ac-in" id="acn-code" placeholder="Code e.g. 6220" style="width:110px"/><input class="ac-in" id="acn-name" placeholder="Account name" style="width:180px"/><input class="ac-in" id="acn-ko" placeholder="한글명" style="width:110px"/>
+    <select class="ac-in" id="acn-sc"><option value="">Sch C line —</option>${Object.keys(AC_SC).map(k=>`<option value="${k}">L${k} ${AC_SC[k]}</option>`).join('')}</select>
+    <select class="ac-in" id="acn-flag"><option value="">Kind —</option><option value="cash">Bank / cash</option><option value="card">Credit card</option><option value="loan">Loan</option><option value="fixed">Fixed asset</option><option value="pt">Client funds</option></select>
+    <button class="btn btn-sm btn-p" onclick="acAddAcct()">Add account</button></div></div>
+    <div class="ac-muted" style="padding:8px 16px;font-size:11px">Code sets the type: 1xxx asset · 2xxx liability · 3xxx equity · 4xxx income · 5xxx–6xxx expense.</div>
+    <div class="ac-wrap"><table><thead><tr><th>Code</th><th>Account</th><th>Sch C</th><th>Kind</th><th style="text-align:right">Balance</th><th class="ac-noprint"></th></tr></thead><tbody>${coaRows}</tbody></table></div></div>`;
+}
+function acSet(k,v){ensureAcct();db.acctSettings[k]=v;save();acRefresh();toast('Setting saved');}
+function acAddAcct(){
+  ensureAcct();const code=acV('acn-code').trim(),name=acV('acn-name').trim(),ko=acV('acn-ko').trim(),sc=acV('acn-sc'),flag=acV('acn-flag');
+  if(!/^[1-6]\d{3}$/.test(code)){toast('Code must be 4 digits, 1000–6999');return;}
+  if(acMap()[code]){toast('Code '+code+' already exists');return;}
+  if(!name){toast('Account name required');return;}
+  const type={1:'ASSET',2:'LIABILITY',3:'EQUITY',4:'INCOME',5:'EXPENSE',6:'EXPENSE'}[code[0]];
+  db.acctCoaX.add.push({code,name,ko,type,sc:type==='EXPENSE'?(sc||'27a'):type==='INCOME'?(sc||'1'):'',flags:flag?[flag]:[]});
+  save();acRefresh();toast('Account '+code+' added');
+}
+function acRenameAcct(code){
+  const a=acMap()[code];if(!a)return;const n=prompt('Account name for '+code,a.name);if(n==null)return;const k=prompt('한글명',a.ko||'');
+  db.acctCoaX.ren[code]={name:n.trim()||a.name,ko:k==null?a.ko:k.trim()};save();acRefresh();
+}
+function acToggleAcct(code){const o=db.acctCoaX.off;const i=o.indexOf(code);if(i>=0)o.splice(i,1);else o.push(code);save();acRefresh();}
+function acRemoveAcct(code){
+  const used=acAll('','').some(j=>j.lines.some(l=>l.a===code));
+  if(used){toast('Account '+code+' has activity — hide it instead');return;}
+  if(!confirm('Remove account '+code+'?'))return;
+  db.acctCoaX.add=db.acctCoaX.add.filter(a=>a.code!==code);db.acctLoans=db.acctLoans.filter(l=>l.acct!==code);save();acRefresh();
+}
+function acMapLegacy(t){
+  const c=(t.cat||'').toUpperCase();
+  if(t.type==='INCOME'){if(/SEED|CAPITAL|INVEST|OWNER/.test(c))return'3000';if(/LOAN/.test(c))return'2320';if(c===BROKER_FEE_CATEGORY||/BROKER/.test(c))return'4000';if(/ISF/.test(c))return'4010';if(/CONSULT|CLASSIF/.test(c))return'4030';if(/INTEREST/.test(c))return'4900';return'4040';}
+  if(/ABI|NETCHB|CUSTOMSCITY/.test(c))return'6200';if(/BOND/.test(c))return'5300';if(/INSUR/.test(c))return'5310';if(/RENT/.test(c))return'5700';
+  if(/SALARY|WAGE|PAYROLL/.test(c))return'5220';if(/CAR|AUTO|GAS|FUEL/.test(c))return'5100';if(/TRUCK|DRAY|COURIER|WAREHOUSE|CFS/.test(c))return'6400';
+  if(/SOFTWARE|SAAS|SUBSCR/.test(c))return'6210';if(/PHONE|INTERNET|UTIL/.test(c))return'6100';if(/MEAL/.test(c))return'6050';if(/TRAVEL/.test(c))return'6000';
+  if(/CPA|LEGAL|ATTORNEY|ACCOUNTING/.test(c))return'5500';if(/SUPPL/.test(c))return'5800';if(/LICENSE|PERMIT|TAX/.test(c))return'5900';if(/^AD\b|ADVERT|MARKET/.test(c))return'5000';
+  if(/BANK|WIRE|FEE/.test(c))return'6250';return'6900';
+}
+function acImportLegacy(){
+  ensureAcct();const s=db.acctSettings;
+  const list=(db.bkgTransactions||[]).filter(t=>!t.auto&&t.date>=(s.booksStart||'')&&!db.acctLegacyDone.includes(t.id));
+  if(!list.length)return;
+  if(!confirm('Import '+list.length+' transaction(s) from the old log into the journal?'))return;
+  const locked=s.lockThrough;let n=0;
+  list.forEach(t=>{if(locked&&t.date<=locked)return;const amt=acR2(t.total||t.net);if(!amt)return;const acc=acMapLegacy(t),cash=s.depositAcct||'1000';
+    const lines=t.type==='INCOME'?[{a:cash,d:amt,c:0},{a:acc,d:0,c:amt}]:[{a:acc,d:amt,c:0},{a:cash,d:0,c:amt}];
+    db.acctJournal.push({id:'J'+db.nextAcctId++,date:t.date,ref:t.inv||'',party:'',memo:(t.desc||t.cat)+' [old: '+t.cat+']'+(t.note?' — '+t.note:''),lines,src:'legacy',kind:t.type==='INCOME'?'INCOME':'EXPENSE',updated:new Date().toISOString()});
+    db.acctLegacyDone.push(t.id);n++;});
+  save();acRefresh();toast('✓ Imported '+n+' transaction(s) — review them in the journal');
+}
+
+// ── Entry modal ──
+let acEdit=null,acLines=[];
+function openAcctTx(kind,preset){ensureAcct();acEdit={id:null,kind:kind||'CHOOSE',preset:preset||{}};acLines=[{a:'',d:'',c:''},{a:'',d:'',c:''}];acModalRender();openModal('acct-modal');}
+function acOpenEntry(id){
+  ensureAcct();const j=acAll('','').find(x=>String(x.id)===String(id));if(!j)return;
+  if(j.kind==='AUTO'){toast('Auto-posted from '+(j.src==='entry'?'Brokerage → Entries':j.src==='payment'?'Invoices → payments':'Payables (A/P)')+' — edit it there');return;}
+  if(db.acctSettings.lockThrough&&j.date<=db.acctSettings.lockThrough){toast('🔒 Books are locked through '+db.acctSettings.lockThrough);return;}
+  let kind=j.kind&&AC_TPL[j.kind]?j.kind:'GENERAL';const p={date:j.date,ref:j.ref,party:j.party,memo:j.memo,doc:j.doc};
+  if(kind==='LOAN_PAY'){const ln=j.lines.find(l=>l.d&&M_isLoan(l.a)),it=j.lines.find(l=>l.a==='5400'),fr=j.lines.find(l=>l.c);if(ln&&fr){p.loan=ln.a;p.from=fr.a;p.prin=ln.d;p.int=it?it.d:0;}else kind='GENERAL';}
+  else if(kind!=='GENERAL'){const d=j.lines.filter(l=>l.d),c=j.lines.filter(l=>l.c);if(j.lines.length===2&&d.length===1&&c.length===1){p.dr=d[0].a;p.cr=c[0].a;p.amt=d[0].d;}else kind='GENERAL';}
+  acLines=j.lines.map(l=>({a:l.a,d:l.d||'',c:l.c||''}));
+  acEdit={id:j.id,kind,preset:p};acModalRender();openModal('acct-modal');
+}
+function M_isLoan(code){const a=acMap()[code];return a&&a.flags.includes('loan');}
+function acModalRender(){
+  const el=gid('acct-modal-body');if(!el)return;const M=acMap(),k=acEdit.kind,p=acEdit.preset||{};
+  if(k==='CHOOSE'){
+    el.innerHTML=`<div class="md-t">New journal entry</div><div class="ac-muted" style="margin-bottom:14px">Pick what happened. The debits and credits are filled in for you.</div>`+
+    AC_TPL_GROUPS.map(([g,keys])=>`<div class="ttl" style="margin:10px 0 6px">${g}</div><div class="ac-tpl">${keys.map(x=>{const T=AC_TPL[x];return `<button class="ac-tpl-b" onclick="acEdit.kind='${x}';acModalRender()"><b>${T.t}</b><span>${T.ko}</span>${T.special?'':`<i>Dr ${T.dd} / Cr ${T.cd}</i>`}</button>`;}).join('')}</div>`).join('')+
+    `<div class="ma"><button class="btn" onclick="closeModal('acct-modal')">Cancel</button></div>`;return;
+  }
+  if(k==='LOANMETA'){
+    const m=acLoanMeta(acEdit.code),a=M[acEdit.code];
+    el.innerHTML=`<div class="md-t">Loan terms — ${acE(a?a.name:acEdit.code)}</div><div class="fg">
+      <div class="fgi"><label>Lender</label><input id="alm-lender" value="${acE(m.lender)}"/></div>
+      <div class="fgi"><label>Relationship</label><input id="alm-rel" value="${acE(m.relation)}" placeholder="e.g. Family — sister"/></div>
+      <div class="fgi"><label>Interest rate (% per year)</label><input id="alm-rate" type="number" step="0.01" value="${acE(m.rate)}"/></div>
+      <div class="fgi"><label>Promissory note signed</label><input id="alm-note" type="date" value="${acE(m.noteDate)}"/></div>
+      <div class="fgi"><label>Maturity date</label><input id="alm-mat" type="date" value="${acE(m.maturity)}"/></div>
+      <div class="fgi"><label>Note link (Drive)</label><input id="alm-doc" value="${acE(m.doc)}" placeholder="https://drive.google.com/…"/></div>
+      <div class="fgi s2"><label>Repayment terms</label><input id="alm-terms" value="${acE(m.terms)}" placeholder="e.g. $500/month from Jul 2027, 0% interest"/></div></div>
+      <div class="ma"><button class="btn" onclick="closeModal('acct-modal')">Cancel</button><button class="btn btn-p" onclick="acSaveLoanMeta()">Save terms</button></div>`;return;
+  }
+  const T=AC_TPL[k];const lockNote=db.acctSettings.lockThrough?`<span class="ac-muted">Locked through ${db.acctSettings.lockThrough}</span>`:'';
+  let body='';
+  if(k==='LOAN_PAY'){
+    body=`<div class="fgi"><label>Loan account</label><select id="acm-loan">${acOpts('loan',p.loan||'2310',M)}</select></div>
+      <div class="fgi"><label>Paid from</label><select id="acm-from">${acOpts('paysrc',p.from||'1000',M)}</select></div>
+      <div class="fgi"><label>Principal ($)</label><input id="acm-prin" type="number" step="0.01" value="${p.prin||''}" oninput="acPreview()"/></div>
+      <div class="fgi"><label>Interest ($) → 5400</label><input id="acm-int" type="number" step="0.01" value="${p.int||''}" oninput="acPreview()"/></div>`;
+  }else if(k==='GENERAL'){
+    body=`<div class="fgi s2"><label>Lines</label><div id="acm-lines"></div><button class="btn btn-sm" style="margin-top:6px;align-self:flex-start" onclick="acLines.push({a:'',d:'',c:''});acDrawLines()">+ Add line</button></div>`;
+  }else{
+    body=`<div class="fgi"><label>Debit — ${T.dr[0]}</label><select id="acm-dr" onchange="acPreview()">${acOpts(T.dr[1],p.dr||T.dd,M)}</select></div>
+      <div class="fgi"><label>Credit — ${T.cr[0]}</label><select id="acm-cr" onchange="acPreview()">${acOpts(T.cr[1],p.cr||T.cd,M)}</select></div>
+      <div class="fgi s2"><label>Amount ($)</label><input id="acm-amt" type="number" step="0.01" value="${p.amt||''}" oninput="acPreview()"/></div>`;
+  }
+  el.innerHTML=`<div class="md-t">${acEdit.id?'Edit':'New'} — ${T.t} <span class="ac-ko">${T.ko}</span></div>
+    ${acEdit.id?'':'<div style="margin:-6px 0 12px"><button class="btn btn-sm" onclick="acEdit.kind=\'CHOOSE\';acModalRender()">← Change type</button> '+lockNote+'</div>'}
+    <div class="fg">
+      <div class="fgi"><label>Date</label><input id="acm-date" type="date" value="${p.date||today()}"/></div>
+      <div class="fgi"><label>Ref / check / invoice #</label><input id="acm-ref" value="${acE(p.ref||'')}"/></div>
+      <div class="fgi s2"><label>${k==='LOAN_IN'||k==='LOAN_PAY'?'Lender':k==='EXPENSE'?'Payee / vendor':k.startsWith('CLIENT')||k==='APPLY_DEP'||k==='REIMB_IN'?'Client':'Party'}</label><input id="acm-party" value="${acE(p.party||'')}"/></div>
+      ${body}
+      <div class="fgi s2"><label>Memo</label><input id="acm-memo" value="${acE(p.memo||'')}"/></div>
+      <div class="fgi s2"><label>Document link (receipt, promissory note, statement)</label><input id="acm-doc" value="${acE(p.doc||'')}" placeholder="https://drive.google.com/…"/></div>
+    </div>
+    <div id="acm-preview" class="ac-preview"></div>
+    <div class="ma"><button class="btn" onclick="closeModal('acct-modal')">Cancel</button><button class="btn btn-p" onclick="acSave()">${acEdit.id?'Save changes':'Record entry'}</button></div>`;
+  if(k==='GENERAL')acDrawLines();else acPreview();
+}
+function acDrawLines(){
+  const M=acMap(),el=gid('acm-lines');if(!el)return;
+  el.innerHTML=`<table class="ac-ltab"><thead><tr><th>Account</th><th style="text-align:right">Debit</th><th style="text-align:right">Credit</th><th></th></tr></thead><tbody>`+
+    acLines.map((l,i)=>`<tr><td><select onchange="acLines[${i}].a=this.value;acPreview()"><option value="">— account —</option>${acOpts('any',l.a,M)}</select></td>
+    <td><input type="number" step="0.01" value="${l.d}" oninput="acLines[${i}].d=this.value;if(this.value)acLines[${i}].c='';acPreview()"/></td>
+    <td><input type="number" step="0.01" value="${l.c}" oninput="acLines[${i}].c=this.value;if(this.value)acLines[${i}].d='';acPreview()"/></td>
+    <td>${acLines.length>2?`<span class="sci-del" onclick="acLines.splice(${i},1);acDrawLines()">✕</span>`:''}</td></tr>`).join('')+'</tbody></table>';
+  acPreview();
+}
+function acBuildLines(){
+  const k=acEdit.kind;
+  if(k==='GENERAL')return acLines.filter(l=>l.a&&(acR2(l.d)||acR2(l.c))).map(l=>({a:l.a,d:acR2(l.d),c:acR2(l.c)}));
+  if(k==='LOAN_PAY'){const pr=acR2(acV('acm-prin')),it=acR2(acV('acm-int')),L=[];if(pr)L.push({a:acV('acm-loan'),d:pr,c:0});if(it)L.push({a:'5400',d:it,c:0});if(pr+it)L.push({a:acV('acm-from'),d:0,c:acR2(pr+it)});return L;}
+  const amt=acR2(acV('acm-amt'));if(!amt)return[];return[{a:acV('acm-dr'),d:amt,c:0},{a:acV('acm-cr'),d:0,c:amt}];
+}
+function acPreview(){
+  const el=gid('acm-preview');if(!el)return;const M=acMap(),L=acBuildLines();
+  const d=acR2(L.reduce((s,l)=>s+l.d,0)),c=acR2(L.reduce((s,l)=>s+l.c,0)),ok=L.length>=2&&d===c&&d>0;
+  el.innerHTML=L.length?`<table><tbody>${L.map(l=>`<tr><td style="padding-left:${l.c?30:10}px">${acE(acName(l.a,M))}</td><td class="ac-num">${l.d?acF(l.d):''}</td><td class="ac-num">${l.c?acF(l.c):''}</td></tr>`).join('')}
+    <tr class="ac-tot"><td>${ok?'✓ Balanced':'Debits and credits must be equal'}</td><td class="ac-num">${acF(d)}</td><td class="ac-num">${acF(c)}</td></tr></tbody></table>`:'<span class="ac-muted">Enter an amount to preview the entry.</span>';
+  el.className='ac-preview '+(L.length?(ok?'ok':'bad'):'');
+}
+function acSave(){
+  const s=db.acctSettings,date=acV('acm-date')||today();
+  if(s.lockThrough&&date<=s.lockThrough){toast('🔒 Books are locked through '+s.lockThrough+' — change the date or unlock in Setup');return;}
+  if(s.booksStart&&date<s.booksStart){toast('Date is before the books start date ('+s.booksStart+')');return;}
+  const L=acBuildLines(),M=acMap();
+  if(L.length<2){toast('Enter an amount (at least one debit and one credit)');return;}
+  if(L.some(l=>!M[l.a])){toast('Choose an account on every line');return;}
+  const d=acR2(L.reduce((x,l)=>x+l.d,0)),c=acR2(L.reduce((x,l)=>x+l.c,0));
+  if(d!==c||d<=0){toast('Not balanced — debits '+acF(d)+' vs credits '+acF(c));return;}
+  if(acEdit.kind!=='GENERAL'&&acEdit.kind!=='LOAN_PAY'&&L[0].a===L[1].a){toast('Debit and credit accounts must differ');return;}
+  const prev=acEdit.id?db.acctJournal.find(j=>j.id===acEdit.id):null;
+  const rec={id:prev?prev.id:'J'+db.nextAcctId++,date,ref:acV('acm-ref').trim(),party:acV('acm-party').trim(),memo:acV('acm-memo').trim(),doc:acV('acm-doc').trim(),kind:acEdit.kind,lines:L,src:prev?prev.src:'manual',updated:new Date().toISOString()};
+  if(prev){Object.keys(db.acctCleared).forEach(k=>{if(k.startsWith(prev.id+'|'))delete db.acctCleared[k];});db.acctJournal[db.acctJournal.indexOf(prev)]=rec;}
+  else db.acctJournal.push(rec);
+  save();closeModal('acct-modal');acRefresh();toast(prev?'Entry updated':'✓ Recorded — '+(AC_TPL[rec.kind]||{}).t);
+}
+function acDelete(id){
+  const j=db.acctJournal.find(x=>x.id===id);if(!j)return;
+  if(db.acctSettings.lockThrough&&j.date<=db.acctSettings.lockThrough){toast('🔒 Locked period');return;}
+  if(!confirm('Delete entry '+j.date+' '+(j.memo||'')+'?'))return;
+  db.acctJournal=db.acctJournal.filter(x=>x.id!==id);Object.keys(db.acctCleared).forEach(k=>{if(k.startsWith(id+'|'))delete db.acctCleared[k];});
+  if(j.src==='legacy'){/* keep legacy id marked as done so it is not re-imported */}
+  save();acRefresh();toast('Entry deleted');
+}
+function acSaveLoanMeta(){
+  const code=acEdit.code;const m={acct:code,lender:acV('alm-lender').trim(),relation:acV('alm-rel').trim(),rate:acV('alm-rate'),noteDate:acV('alm-note'),maturity:acV('alm-mat'),doc:acV('alm-doc').trim(),terms:acV('alm-terms').trim()};
+  db.acctLoans=db.acctLoans.filter(l=>l.acct!==code).concat([m]);save();closeModal('acct-modal');acRefresh();toast('Loan terms saved');
+}
 </script>
 </body>
 </html>
