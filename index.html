@@ -178,11 +178,6 @@ body.edit-mode .app-acts{opacity:1}
 .viewer-back:hover{background:rgba(255,255,255,.18)}
 .viewer-title{font-size:14px;font-weight:700;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .viewer-frame{flex:1;border:none;width:100%;background:#fff}
-.zoom-btn{padding:4px 10px;border-radius:5px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
-.zoom-btn.active{background:var(--gold);border-color:var(--gold3);color:var(--ink)}
-.zoom-btn:hover:not(.active){background:rgba(255,255,255,.18);color:#fff}
-.zoom-group{display:flex;align-items:center;gap:4px;flex-shrink:0}
-.zoom-label{font-size:10px;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.05em;margin-right:2px}
 </style>
 </head>
 <body>
@@ -195,11 +190,6 @@ body.edit-mode .app-acts{opacity:1}
     <a onclick="openBackup()">💾 백업 & 복원</a>
     <span>|</span>
     <a id="edit-link" onclick="toggleEdit()">편집 모드</a>
-    <span>|</span>
-    <span style="color:rgba(255,255,255,.4);font-size:10px;font-weight:600;letter-spacing:.05em">화면</span>
-    <a onclick="setHubZoom(1)" id="hz1" style="font-weight:700">1x</a>
-    <a onclick="setHubZoom(1.5)" id="hz15" style="font-weight:700;color:var(--gold)">1.5x</a>
-    <a onclick="setHubZoom(2)" id="hz2" style="font-weight:700">2x</a>
   </div>
   <div class="hdr-main">
     <div class="logo">
@@ -257,12 +247,6 @@ body.edit-mode .app-acts{opacity:1}
   <div class="viewer-bar">
     <button class="viewer-back" onclick="closeViewer()">← Justin's Hub</button>
     <span class="viewer-title" id="viewer-title"></span>
-    <div class="zoom-group">
-      <span class="zoom-label">화면 크기</span>
-      <button class="zoom-btn" onclick="setZoom(1)">1x</button>
-      <button class="zoom-btn active" onclick="setZoom(1.5)">1.5x</button>
-      <button class="zoom-btn" onclick="setZoom(2)">2x</button>
-    </div>
   </div>
   <iframe class="viewer-frame" id="viewer-frame" src="" allowfullscreen></iframe>
 </div>
@@ -277,11 +261,6 @@ var DEFAULT={
   cats:[
     {id:'biz',name:'Brokerage',emoji:'🛃',color:'#1a3a5c',
      subs:[
-       {id:'biz-ops',name:'Operations',color:'#1a3a5c',
-        apps:[
-          {id:'b1',name:'JN Ledger Pro',emoji:'📋',file:'broker_ledger.html',desc:'Entry관리 · 청구서 · Pipeline · ABI',color:'#1a3a5c'},
-          {id:'b2',name:'Case Notes DB',emoji:'🗂️',file:'case_notes.html',desc:'HTS분류 · 판례 · 케이스 검색 DB',color:'#0F6E56'}
-        ]},
        {id:'biz-news',name:'News & Market',color:'#2d5f96',
         apps:[
           {id:'b3',name:'Korean News',emoji:'📰',file:'korean-news-portal.html',desc:'한국 뉴스 포털',color:'#2d5f96'},
@@ -313,6 +292,15 @@ var D=null;
 function load(){
   try{var s=localStorage.getItem(SK);D=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT));}
   catch(e){D=JSON.parse(JSON.stringify(DEFAULT));}
+  // Business apps moved to standalone JN Workdesk — strip them from saved hub layouts
+  var WORK_FILES=['broker_ledger.html','case_notes.html'];
+  D.cats.forEach(function(c){
+    c.subs.forEach(function(s){
+      s.apps=(s.apps||[]).filter(function(a){return WORK_FILES.indexOf(a.file)<0;});
+    });
+    c.subs=c.subs.filter(function(s){return s.id!=='biz-ops'||s.apps.length;});
+  });
+  save();
 
   D.cats.forEach(function(c){
     if(openState[c.id]===undefined)openState[c.id]=true;
@@ -490,7 +478,6 @@ function launch(ci,si,ai,e){
     openViewer(app.file, app.emoji+' '+app.name);
   }
 }
-var curZoom=1.5;
 function openViewer(file,title){
   var viewer=document.getElementById('app-viewer');
   var frame=document.getElementById('viewer-frame');
@@ -498,11 +485,9 @@ function openViewer(file,title){
   if(titleEl) titleEl.textContent=title||'';
   if(frame){
     frame.src=file;
-    frame.onload=function(){ applyZoom(curZoom); };
   }
   if(viewer) viewer.classList.add('active');
   document.body.style.overflow='hidden';
-  updateZoomBtns();
 }
 function closeViewer(){
   var viewer=document.getElementById('app-viewer');
@@ -510,27 +495,6 @@ function closeViewer(){
   if(frame){ frame.onload=null; frame.src=''; }
   if(viewer) viewer.classList.remove('active');
   document.body.style.overflow='';
-}
-function applyZoom(z){
-  var frame=document.getElementById('viewer-frame');
-  if(!frame) return;
-  try{
-    var doc=frame.contentDocument||frame.contentWindow.document;
-    if(!doc) return;
-    var el=doc.documentElement;
-    if(el){ el.style.zoom=z; }
-  }catch(e){}
-}
-function setZoom(z){
-  curZoom=z;
-  applyZoom(z);
-  updateZoomBtns();
-}
-function updateZoomBtns(){
-  document.querySelectorAll('.zoom-btn').forEach(function(b){
-    var bz=parseFloat(b.textContent);
-    b.classList.toggle('active', bz===curZoom);
-  });
 }
 
 // ── MODAL ──
@@ -589,7 +553,7 @@ function openEditApp(ci,si,ai){var a=D.cats[ci].subs[si].apps[ai],sub=D.cats[ci]
 function deleteApp(ci,si,ai){var a=D.cats[ci].subs[si].apps[ai];openModal('앱 삭제','<p style="font-size:13px;color:var(--ink2);line-height:1.8"><strong>'+esc(a.name)+'</strong>을 삭제할까요?</p>',DEL_FOOT,function(){D.cats[ci].subs[si].apps.splice(ai,1);save();closeModal();renderAll();toast('🗑 삭제됨');});}
 
 // ── BACKUP ──
-var ALL_SK=['jlp-v3','jhub-v3','chinese-learner-v1','grammar-v1','convlab-v1','exel_case_notes_v1','ets_tasks','ets_gs_config'];
+var ALL_SK=['jhub-v3','chinese-learner-v1','grammar-v1','convlab-v1','ets_tasks'];
 function openBackup(){
   var saved=ALL_SK.filter(function(k){try{return!!localStorage.getItem(k);}catch(e){return false;}});
   var lastBk=localStorage.getItem('jbk-last');
@@ -645,23 +609,8 @@ try{
 }catch(e){}
 
 load();updateHeader();setInterval(updateHeader,60000);renderNav();renderAll();
-var hubZoom = parseFloat(localStorage.getItem('hub-zoom')||'1.5');
-applyHubZoom(hubZoom);
-function applyHubZoom(z){
-  document.getElementById('app').style.zoom = z;
-  ['hz1','hz15','hz2'].forEach(function(id){
-    var el=document.getElementById(id);
-    if(el) el.style.color = 'rgba(255,255,255,.45)';
-  });
-  var map = {1:'hz1',1.5:'hz15',2:'hz2'};
-  var active = document.getElementById(map[z]);
-  if(active) active.style.color = 'var(--gold)';
-}
-function setHubZoom(z){
-  hubZoom=z;
-  localStorage.setItem('hub-zoom', z);
-  applyHubZoom(z);
-}
+// zoom controls removed — use browser zoom (Ctrl/Cmd +/-)
+try{ localStorage.removeItem('hub-zoom'); }catch(e){}
 </script>
 </body>
 </html>
