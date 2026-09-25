@@ -2328,17 +2328,31 @@ function importBackupJSON(input){
   reader.readAsText(f);
 }
 function resetAllData(){
-  if(!confirm('⚠ RESET ALL DATA?\nAll entries, clients, invoices and transactions will be deleted.\nA backup file will be downloaded automatically first.'))return;
-  if(!confirm('Final confirmation — are you absolutely sure?'))return;
+  if(!confirm('⚠ START FROM ZERO?\n\nEvery client, entry, invoice, A/P bill, pipeline record, old bookkeeping row and accounting journal entry will be deleted — locally AND in Google Sheets.\n\nA full backup (.json) downloads first. Accounting settings and your chart of accounts are kept.'))return;
+  if(prompt('Type DELETE to confirm')!=='DELETE'){toast('Reset cancelled');return;}
   exportBackupJSON();
+  const keep={acctSettings:db.acctSettings||null,acctCoaX:db.acctCoaX||null};
   db={clients:[],entries:[],invoices:[],nextEntryId:1,nextInvoiceId:1,nextClientId:1,
     bkgTransactions:[],bkgGoals:{},
-    bkgIncCategories:db.bkgIncCategories&&db.bkgIncCategories.length?db.bkgIncCategories:[BROKER_FEE_CATEGORY],
-    bkgExpCategories:db.bkgExpCategories&&db.bkgExpCategories.length?db.bkgExpCategories:['OFFICE RENT'],
-    nextBkgId:1,apInvoices:[],nextApId:1,plEmails:[],plResults:[],plQueue:[],plLastRun:null,plPushedCount:0};
-  try{localStorage.setItem('ets_no_demo','1');}catch(e){}
-  save();populateClientDropdown();renderDashboard();
-  toast('✓ All data cleared — fresh start. Demo data will NOT be re-seeded.');
+    bkgIncCategories:[BROKER_FEE_CATEGORY,'ISF FILING','CONSULTING'],
+    bkgExpCategories:['ABI SOFTWARE','BOND PREMIUM','OFFICE RENT'],
+    nextBkgId:1,apInvoices:[],nextApId:1,plEmails:[],plResults:[],plQueue:[],plLastRun:null,plPushedCount:0,
+    acctJournal:[],nextAcctId:1,acctLoans:[],acctCleared:{},acctRecon:[],acctLegacyDone:[],
+    acctSettings:keep.acctSettings,acctCoaX:keep.acctCoaX};
+  try{
+    localStorage.setItem('ets_no_demo','1');
+    localStorage.removeItem('ets_demo_mode');localStorage.removeItem('ets_demo_backup');
+  }catch(e){}
+  if(typeof ensureAcct==='function')ensureAcct();
+  try{localStorage.setItem('ets_ledgerpro',JSON.stringify(db));}catch(e){}
+  if(typeof updateDemoBanner==='function')updateDemoBanner();
+  if(typeof updateDemoButton==='function')updateDemoButton();
+  populateClientDropdown();renderDashboard();
+  if(typeof acRefresh==='function')acRefresh();
+  if(gsConfig&&gsConfig.url&&gsConfig.token){
+    const before=gsLastSync;const fail=()=>alert('Local data is cleared, but Google Sheets did not update.\nOpen ☁ Google Sheets and press Sync now BEFORE reloading, or the old data will load back.');
+    setTimeout(()=>gsSyncNow().then(()=>{if(gsLastSync&&gsLastSync!==before)toast('✓ Fresh start — local data and Google Sheets are now empty');else fail();}).catch(fail),400);
+  } else toast('✓ Fresh start — all data cleared. Demo data will not be re-seeded.');
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -5806,6 +5820,9 @@ function acSetup(M){
     <div style="font-size:12px;line-height:1.7;color:var(--t2)">${legacy.length} manual transaction(s) on or after ${acE(s.booksStart)} are ready to import into the journal. ${legacyOld.length} older transaction(s) stay in the old log — records from before JN Customs belong to a different taxpayer (Exel Logistics Inc.) and should not be mixed into these books.</div>
     <div class="ac-muted" style="font-size:11px;margin:8px 0">Income becomes Dr ${acE(s.depositAcct)} / Cr income account; seed-money categories go to Owner's Capital. Expenses become Dr expense / Cr ${acE(s.depositAcct)}. Auto-posted broker fees are skipped because entries post themselves. Review each imported line afterwards.</div>
     <button class="btn btn-sm btn-p" ${legacy.length?'':'disabled'} onclick="acImportLegacy()">Import ${legacy.length} transaction(s)</button>
+    <div class="ttl" style="margin:18px 0 8px">Start from zero</div>
+    <div class="ac-muted" style="font-size:11px;margin-bottom:8px;line-height:1.6">Deletes all clients, entries, invoices, A/P, pipeline records and journal entries — here and in Google Sheets. A backup downloads first. Settings and chart of accounts stay.</div>
+    <button class="btn btn-sm btn-danger" onclick="resetAllData()">🗑 Delete all data and start fresh</button>
     <div class="ttl" style="margin:18px 0 10px">Monthly profit goals</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">${months.map(m=>`<label style="font-size:11px;color:var(--t3)">${monthLabel(m)}<input type="number" class="ac-in" style="width:100%" value="${(db.bkgGoals||{})[m]||''}" placeholder="Goal $" onchange="setGoal('${m}',this.value)"/></label>`).join('')}</div>
    </div>
