@@ -259,14 +259,6 @@ var curTab='all';
 
 var DEFAULT={
   cats:[
-    {id:'biz',name:'Brokerage',emoji:'🛃',color:'#1a3a5c',
-     subs:[
-       {id:'biz-news',name:'News & Market',color:'#2d5f96',
-        apps:[
-          {id:'b3',name:'Korean News',emoji:'📰',file:'korean-news-portal.html',desc:'한국 뉴스 포털',color:'#2d5f96'},
-          {id:'b4',name:'Stock Game',emoji:'📈',file:'stock-game.html',desc:'모의 주식 트레이딩',color:'#1e6b3c'}
-        ]}
-     ]},
     {id:'per',name:'Personal',emoji:'🏡',color:'#2d5f96',
      subs:[
        {id:'per-study',name:'Language Study',color:'#1e4fa3',
@@ -281,6 +273,11 @@ var DEFAULT={
        {id:'per-plan',name:'Life Planner',color:'#c8a84b',
         apps:[
           {id:'a5',name:'Life Planner',emoji:'🗓️',file:'justin_life_planner.html',desc:'만다라트 · 8영역 목표 관리',color:'#c8a84b'}
+        ]},
+       {id:'biz-news',name:'News & Market',color:'#2d5f96',
+        apps:[
+          {id:'b3',name:'Korean News',emoji:'📰',file:'korean-news-portal.html',desc:'한국 뉴스 포털',color:'#2d5f96'},
+          {id:'b4',name:'Stock Game',emoji:'📈',file:'stock-game.html',desc:'모의 주식 트레이딩',color:'#1e6b3c'}
         ]}
      ]}
   ],
@@ -300,6 +297,15 @@ function load(){
     });
     c.subs=c.subs.filter(function(s){return s.id!=='biz-ops'||s.apps.length;});
   });
+  var biz=D.cats.filter(function(c){return c.id==='biz';})[0];
+  var per=D.cats.filter(function(c){return c.id==='per';})[0];
+  if(biz){
+    var keep=biz.subs.filter(function(s){return (s.apps||[]).length;});
+    if(per) per.subs=per.subs.concat(keep);
+    else if(keep.length) D.cats.push({id:'per',name:'Personal',emoji:'🏡',color:'#2d5f96',subs:keep});
+    D.cats=D.cats.filter(function(c){return c.id!=='biz';});
+    if(curTab==='biz') curTab='all';
+  }
   save();
 
   D.cats.forEach(function(c){
